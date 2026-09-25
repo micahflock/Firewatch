@@ -120,7 +120,7 @@ What that means for the glow:
 - **Flicker speed isn't measured.** Ten-second samples can't show how fast the fire flickers, so the three flicker rates are still general fire-physics defaults. A 2–3 minute phone recording of the TV playing the video would measure them.
 - **Colors are approximate.** They come from compressed 160 × 90 JPEGs, and the conversion from LED duty cycle to screen color is approximate. Tune the final color by eye on the real strip.
 
-### Level 2: frame-synced pre-rendered track: feasible only if Roku reports YouTube's playback position, and even then of modest value
+### Level 2: frame-synced pre-rendered track: your TV does report YouTube's playback position, but the payoff is modest
 
 The idea: analyze the video frame by frame offline, store a per-zone light track on the ESP32, and play it in step with the TV.
 
@@ -128,21 +128,21 @@ The idea: analyze the video frame by frame offline, store a per-zone light track
 |---|---|
 | Storage | **Not a constraint.** The 39.3-min clip at 15 fps × 4 zones × 1 byte ≈ 140 KB. The whole 6 h ≈ 1.3 MB. Both fit in the ESP32's 4 MB flash next to the firmware. |
 | Getting frames to analyze | **Awkward.** It needs the video at ≥ 15 fps. Downloading it with yt-dlp on your own machine works, but YouTube's Terms of Service don't permit it. Recording the TV with a phone is clean but has to be aligned by hand. The spliced sections mean mapping the whole 6 h, not one loop. |
-| Knowing where playback is | **The blocker.** The ESP32 can't see the screen. Its only source is ECP `query/media-player`, which reports position for apps using Roku's standard player. Whether YouTube reports it on your TV is unverified. Launch delay, buffering, YouTube resuming mid-video, and (without Premium) ads each shift the timeline by seconds, so without a position feed there's no way to line the track up. |
-| Achievable accuracy | With a position feed: polling over HTTP plus the ESP32's clock gives roughly ±100–250 ms. Roku's position granularity is unknown until tested. Ads need detecting (position or duration jumps) and fall back to the procedural fire. |
+| Knowing where playback is | **Available (confirmed on your TV).** ECP `query/media-player` returns `<player state="play">`, `<plugin id="837" name="YouTube">` and `<position>2403952 ms</position>`, but no `<duration>`. The launch landed 40 minutes into the video: YouTube resumes where you last left off rather than starting at 0, so the track has to follow the reported position, not the launch time. Ads (without Premium) still need detecting, e.g. by the position jumping. |
+| Achievable accuracy | Polling over HTTP plus the ESP32's clock gives roughly ±100–250 ms, *if* the reported position updates finely. **Still to measure:** how often the position value actually changes (every frame, every 0.5 s, every second?). The test below measures it. |
 | Payoff | **Small.** For the wall to visibly "answer" a flame, the timing error has to be under ~100 ms. At ±100–250 ms the 3–8 Hz flicker lands out of phase, and only slow swells (≥ 1 s) would visibly line up. This video's fire is steady, with few big swells. The screen itself already throws perfectly synced light into the firebox. |
 
-**One-minute test** (run while the fire video is playing; replace `TV` with the TV's IP):
+**Position-granularity test** (run while the fire video is playing). In Windows PowerShell:
 
-```sh
-curl -s http://TV:8060/query/media-player; sleep 5; curl -s http://TV:8060/query/media-player
+```powershell
+1..20 | % { $t = Get-Date -Format "HH:mm:ss.fff"; $p = ([xml](Invoke-WebRequest -UseBasicParsing http://192.168.1.176:8060/query/media-player).Content).player.position; "$t  $p"; Start-Sleep -Milliseconds 250 }
 ```
 
-Look for `<position>` increasing by about 5000 ms between the two calls, and a `<duration>` of about 21611000 ms.
+It prints 20 readings about 250 ms apart, each with your PC's clock time. If the position changes on every line by roughly the elapsed time, it's fine-grained and sync can reach about ±100–250 ms. If it only changes about once a second, sync error grows to about ±0.5 s, which is still enough for the slow-envelope version described below.
 
 **Recommendation:** keep the statistical match; it captures what's perceptible at the distances involved. If the test shows YouTube reporting position with fine granularity, the version worth building is a **slow-envelope sync**. Only the 0.2–1 Hz swell of total brightness would follow a pre-computed track, and the fast flicker would stay procedural. That hybrid tolerates ±250 ms of error, which the full frame-synced track does not.
 
 ## What was verified vs. what needs your TV
 
 - **Verified here:** the firmware compiles for ESP32 (RGBW, RGB, and IR builds). 25 host unit tests pass, covering the scene policy, ECP response parsing, dithering accuracy, the power limiter, and fire-field behavior. The mounting STLs are watertight meshes exported from the parametric source. The fire animation was rendered offline ([preview](img/preview.gif)).
-- **Needs your hardware:** the power-restore test above, whether your Roku OS build defaults to *Limited* mode, how long the TV takes to wake, and color and brightness tuning against your actual firebox, and whether YouTube reports its playback position over ECP ([section 5](#5-matching-the-glow-to-your-fireplace-video)). Sooty brick reflects much less than paint, so expect to raise brightness. [install.md](install.md) has a 5-minute `curl` checklist that proves the ECP path before you solder anything.
+- **Needs your hardware:** the power-restore test above, whether your Roku OS build defaults to *Limited* mode, how long the TV takes to wake, and color and brightness tuning against your actual firebox, and how finely YouTube's reported playback position updates ([section 5](#5-matching-the-glow-to-your-fireplace-video)). YouTube reporting its position at all is already confirmed on your TV. Sooty brick reflects much less than paint, so expect to raise brightness. [install.md](install.md) has a 5-minute `curl` checklist that proves the ECP path before you solder anything.

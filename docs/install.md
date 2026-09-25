@@ -13,20 +13,20 @@ On the TCL 32S335:
 
 ## 2. Prove the network path before building anything
 
-From a computer on the same network (replace `TV` with the TV's IP address):
+From a computer on the same network (replace `TV` with the TV's IP address, `192.168.1.176`). These commands work in a macOS/Linux terminal and in Windows Command Prompt. In PowerShell, type `curl.exe` instead of `curl`. On Windows, replace `| grep -E "a|b|c"` with `| findstr "a b c"`. Commands that send something (`-d ""`) print nothing when they succeed.
 
 ```sh
 # Is ECP reachable, and is the screen on?
 curl -s http://TV:8060/query/device-info | grep -E "model-name|power-mode|wifi-mac"
 
 # Put the TV in standby with the remote, wait 10 s, then:
-curl -d '' http://TV:8060/keypress/PowerOn        # the screen should come on
+curl -d "" http://TV:8060/keypress/PowerOn        # the screen should come on
 
 # Launch your fire video (youtu.be/CF00JqnCcsU):
-curl -d '' "http://TV:8060/launch/837?contentId=CF00JqnCcsU&mediaType=movie"
+curl -d "" "http://TV:8060/launch/837?contentId=CF00JqnCcsU&mediaType=movie"
 
 curl -s http://TV:8060/query/active-app           # expect <app id="837" ...>YouTube</app>
-curl -d '' http://TV:8060/keypress/PowerOff
+curl -d "" http://TV:8060/keypress/PowerOff
 ```
 
 - If `keypress` returns **403** or "limited mode", recheck step 1.2.
