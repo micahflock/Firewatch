@@ -31,8 +31,11 @@ static const fw::Segment kLedLayout[] = {
 #define TARGET_FPS 120  // high frame rate makes the temporal dithering invisible
 
 // ---- Roku TV -----------------------------------------------------------------------
-// Leave empty to auto-discover via SSDP. A DHCP reservation + fixed IP is more robust.
-#define ROKU_HOST ""
+// The TV's reserved IP. Leave empty to auto-discover via SSDP instead.
+#define ROKU_HOST "192.168.1.176"
+// The TV's Wi-Fi MAC (Settings > Network > About) for Wake-on-LAN before the firmware has
+// read it from the TV itself, e.g. right after a power cut. Leave empty to skip.
+#define ROKU_WIFI_MAC "D4:AB:CD:A8:96:96"
 // YouTube's Roku channel id is 837; contentId is the YouTube video id (the part after
 // "v=" in the URL, or after youtu.be/). A long (8-12 h) video
 // avoids end-of-video autoplay. Left empty, YouTube just opens to its home screen.

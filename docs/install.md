@@ -9,6 +9,7 @@ On the TCL 32S335:
 3. **Settings → System → Power → Power On → Home.**
 4. Optional: **Settings → System → Power → Auto power savings.** Turn off "turn off after 4 hours" if you want to run the fire longer without touching the remote. Leave it on if you like it as a sleep timer; the glow follows the TV either way.
 5. In your router, give the TV a **DHCP reservation**, so its IP address never changes.
+6. **The ESP32 needs a 2.4 GHz Wi-Fi network on the same LAN as the TV.** It has no 5 GHz radio. A router that broadcasts one network name on both bands is fine: the ESP32 joins on 2.4 GHz automatically. If your network is 5 GHz-only, enable a 2.4 GHz network on the same router and subnet, and put that name in `secrets.h`.
 
 ## 2. Prove the network path before building anything
 
@@ -62,7 +63,8 @@ What to set in [`config.h`](../firmware/include/config.h):
 | Setting | What |
 |---|---|
 | `FIRE_CONTENT_ID` | The YouTube fireplace video ID. It's already set to yours (`CF00JqnCcsU`). |
-| `ROKU_HOST` | The TV's reserved IP address. If it's empty, the TV is found by SSDP discovery. |
+| `ROKU_HOST` | The TV's reserved IP address (set to `192.168.1.176`). If it's empty, the TV is found by SSDP discovery. |
+| `ROKU_WIFI_MAC` | The TV's Wi-Fi MAC, for Wake-on-LAN before the firmware has read it from the TV (set to `D4:AB:CD:A8:96:96`) |
 | `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
 | `POWER_BUDGET_MA` | Supply current cap (3000 mA for the 4 A supply) |
@@ -96,6 +98,7 @@ Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightnes
 | Symptom | Check |
 |---|---|
 | `lastError` mentions *Control by mobile apps* | Step 1.2 |
+| Board never joins Wi-Fi (no `firewatch.local`) | The network in `secrets.h` is 5 GHz-only; the ESP32 needs 2.4 GHz (step 1.6) |
 | `tv: unreachable` while the TV is on | Wrong `ROKU_HOST`, or client isolation / a guest network on the router |
 | TV doesn't wake from the web page | Fast TV start is off → turn it on, or fit the IR LED |
 | Fire video doesn't start | Try the `curl` launch from step 2; if that fails too, the video may be region-locked or removed, so pick another and update `FIRE_CONTENT_ID` |

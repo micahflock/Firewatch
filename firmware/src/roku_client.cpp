@@ -16,6 +16,7 @@ constexpr uint32_t kRediscoverMs = 60000;
 void RokuClient::begin(const char* fixedHost) {
   fixedHost_ = fixedHost;
   host_ = fixedHost_;
+  haveMac_[0] = fw::roku::parseMac(ROKU_WIFI_MAC, macs_[0]);
 }
 
 bool RokuClient::discover() {
@@ -101,8 +102,8 @@ fw::TvStatus RokuClient::poll() {
   std::string xml(info.c_str());
   s.power = fw::roku::powerFromDeviceInfo(xml);
   model_ = fw::roku::tagText(xml, "model-name").c_str();
-  haveMac_[0] = fw::roku::parseMac(fw::roku::tagText(xml, "wifi-mac"), macs_[0]);
-  haveMac_[1] = fw::roku::parseMac(fw::roku::tagText(xml, "ethernet-mac"), macs_[1]);
+  haveMac_[0] |= fw::roku::parseMac(fw::roku::tagText(xml, "wifi-mac"), macs_[0]);
+  haveMac_[1] |= fw::roku::parseMac(fw::roku::tagText(xml, "ethernet-mac"), macs_[1]);
 
   if (s.power == fw::TvPower::On) {
     String app;
