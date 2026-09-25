@@ -37,7 +37,7 @@ While you're there, do the smart-plug [power-restore test](feasibility.md#1-smar
 
 The Dig-Uno ships with WLED installed, which is handy for proving the wiring before you flash anything.
 
-1. Wire the supply and strip as in the [wiring diagram](hardware.md#wiring), with the strip laid loose on a table.
+1. Cut the supply's barrel plug off and land its cord in the Dig-Uno's power input (+ found with a multimeter). Solder the 22 AWG start leads to the strip and land them in the LED output (5V / LED1 / GND), per the [wiring diagram](hardware.md#wiring). Lay the strip loose on a table.
 2. Power up, join the `WLED-AP` Wi-Fi network from your phone (password `wled1234`), and give it your home Wi-Fi.
 3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **128**, and data GPIO **16**. Then pick the "Fire 2012" effect.
 4. If the whole strip lights with sensible colors, the wiring is right. WLED can be reinstalled any time from [install.wled.me](https://install.wled.me) if you ever want it back.
@@ -76,11 +76,11 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 ## 5. Build and install
 
 1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 20× `strip_clip_10mm.stl` (see the [print notes](hardware.md#mounting)).
-2. Check that the Dig-Uno's LED1 jumper is on **GPIO16**. The firmware refuses to build for GPIO1.
-3. Screw the base onto the TV's VESA holes (M4 × 12 + washers), with the power window facing the corner where the strip starts.
-4. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window.
-5. Wire it up per the [wiring diagram](hardware.md#wiring): supply → Wagos → Dig-Uno power input and strip end; Dig-Uno LED output → strip start. Cable-tie the supply lead, the Wagos and the strip wires to the anchors.
-6. Stick on the clips, fit the strip, and fold the corners. Count the LEDs per side and update `kLedLayout` if the counts differ from 23/41/23/41.
+2. On the bench, cut the strip into its four runs (23/41/23/41 LEDs at the cut marks). Solder the corner bridges and the 22 AWG leads at the start and end, and heat-shrink each joint (see the [wiring notes](hardware.md#wiring)).
+3. Cut the barrel plug off the supply cord, find + with a multimeter, and land the leads in the Dig-Uno's power input. Check that the LED1 jumper is on **GPIO16**; the firmware refuses to build for GPIO1.
+4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the corner where the strip starts.
+5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the strip wiring in the LED output terminal, with two wires each in 5V and GND. Cable-tie the supply cord and strip leads to the anchors.
+6. Stick on the clips and fit the strip. Hold the wire runs down with scraps of VHB.
 7. Open `http://firewatch.local` and press **Light the fire**. Check that the brightest amber glow is at the bottom (if it isn't, the layout direction is reversed). Then fasten the lid with four M2 × 8 screws.
 
 ## 6. Daily use
@@ -99,6 +99,6 @@ Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightnes
 | `tv: unreachable` while the TV is on | Wrong `ROKU_HOST`, or client isolation / a guest network on the router |
 | TV doesn't wake from the web page | Fast TV start is off → turn it on, or fit the IR LED |
 | Fire video doesn't start | Try the `curl` launch from step 2; if that fails too, the video may be region-locked or removed, so pick another and update `FIRE_CONTENT_ID` |
-| First LEDs flicker or show wrong colors | Data wired to LED2 instead of LED1, the LED1 jumper not on GPIO16, a loose Wago, or data entering the wrong end of the strip (check the arrows) |
+| First LEDs flicker or show wrong colors | Data wired to LED2 instead of LED1, the LED1 jumper not on GPIO16, a cracked solder joint, or data entering the wrong end of the strip (check the arrows) |
 | Colors look green-tinged | `LED_RGBW` doesn't match the strip, or it's a GRBW vs RGBW variant (change `NeoGrbwFeature` in `leds.cpp`) |
 | Glow too dim on sooty brick | Raise the brightness slider; if the current estimate hits the cap, raise `POWER_BUDGET_MA` (supply permitting) |

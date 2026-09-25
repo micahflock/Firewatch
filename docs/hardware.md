@@ -36,7 +36,7 @@ The light doesn't need to be dotless or high-density. The strip faces the firebo
 
 ## Recommendation
 
-**QuinLED Dig-Uno v3 (pre-assembled, with QuinLED-ESP32) + SK6812 RGBW warm-white, 5 V, 60 LED/m, 10 mm, IP30 + Mean Well 5 V 4 A supply**, in a printed enclosure screwed to the TV's VESA holes. **Everything is solderless:** screw terminals and Wago lever connectors.
+**QuinLED Dig-Uno v3 (pre-assembled, with QuinLED-ESP32) + SK6812 RGBW warm-white, 5 V, 60 LED/m, 10 mm, IP30 + Mean Well 5 V 4 A supply**, in a printed enclosure screwed to the TV's VESA holes. The wiring uses the Dig-Uno's screw terminals and a few soldered joints, so the only wire you buy is one roll of 22 AWG 3-conductor.
 
 Why this combination:
 - **RGBW warm-white is the biggest quality lever.** Real firelight is broadband, and a phosphor white die gets much closer to it than any RGB mix. The fire palette ([`fire.cpp`](../firmware/lib/firecore/src/fire.cpp)) uses W for the glow's body and RGB for the red and orange movement.
@@ -57,60 +57,62 @@ Why this combination:
 
 ## Shopping list (from scratch)
 
-Rough 2026 US prices. Many of these are only sold in packs, and the price shown is for the pack.
+This keeps the number of separate purchases small. It assumes you already have a soldering iron, solder, a multimeter, a wire stripper and flush cutters. Rough 2026 US prices; where a part only comes in packs, the price is for the pack.
 
 | # | Part | Qty used | What to buy | ≈ $ |
 |---|---|---|---|---|
 | 1 | **QuinLED Dig-Uno v3, pre-assembled, with QuinLED-ESP32, onboard antenna** | 1 | [quinled.info](https://quinled.info/pre-assembled-quinled-dig-uno/) or a listed distributor | 27.50–37.50 + shipping |
-| 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 2.2 m (128 LEDs) | 5 m reel. These usually come with a JST plug and extra power leads at each end. | 35 |
-| 3 | **Mean Well GST25A05-P1J** (5 V 4 A desktop supply, 5.5 × 2.1 mm plug, short-circuit protected) | 1 | | 15 |
-| 4 | Female 5.5 × 2.1 mm barrel jack → screw terminal adapter | 1 | Pack of 5–10 | 7 |
-| 5 | Wago 221 lever connectors (221-412 two-way / 221-413 three-way) | ~7 | Small mixed assortment | 12 |
-| 6 | 18 AWG 2-conductor red/black wire | ~2 m | 25 ft spool | 10 |
-| 7 | 22 AWG 3-conductor LED wire | ~1 m | 5 m roll | 8 |
-| 8 | M4 × 12 mm screws + M4 washers | 4 | Small pack | 7 |
-| 9 | M2 × 8 mm self-tapping pan-head screws | 8 | Pack. They hold the board (4) and the lid (4). | 7 |
-| 10 | 3M VHB tape, 12 mm (e.g. 5952) | ~0.5 m | Roll | 12 |
-| 11 | Cable ties (≤ 3.6 mm wide) + adhesive cable clips | a few | Packs | 8 |
-| 12 | Wire stripper, small flat screwdriver | | Only if you don't own them | 10 |
-| 13 | Printed parts: `firewatch_base.stl`, `firewatch_lid.stl`, 20 × `strip_clip_10mm.stl` | | PETG, about 90 g | — |
-| | **Total** | | | **≈ $150–165 + Dig-Uno shipping** |
+| 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 2.2 m (128 LEDs) | 5 m reel | 35 |
+| 3 | **Mean Well GST25A05-P1J** (5 V 4 A desktop supply, short-circuit protected) | 1 | Its barrel plug gets cut off, and the cord goes straight into the Dig-Uno | 15 |
+| 4 | 22 AWG 3-conductor LED wire | ~1.5 m | 5 m roll. It's used for every connection: strip start, strip end feed, and corner bridges. | 8 |
+| 5 | Heat-shrink tubing | a few pieces | Small assortment | 7 |
+| 6 | M4 × 12 mm pan-head screws | 4 | Small pack (VESA) | 6 |
+| 7 | M2 × 8 mm self-tapping pan-head screws | 8 | Pack. They hold the board (4) and the lid (4). | 7 |
+| 8 | 3M VHB tape, 12 mm (e.g. 5952) | ~0.5 m | Roll | 12 |
+| 9 | Cable ties (≤ 3.6 mm wide) | a few | Pack | 4 |
+| 10 | Printed parts: `firewatch_base.stl`, `firewatch_lid.stl`, 20 × `strip_clip_10mm.stl` | | PETG, about 90 g | — |
+| | **Total** | | | **≈ $125–135 + Dig-Uno shipping** |
 
-Most of the cost is the Dig-Uno, the strip and the supply (≈ $80–90). The rest is packs of wire, connectors and screws you'll have left over.
+**What got cut, and why:**
+- **Wago connectors:** solder joints under heat-shrink do the same job.
+- **Barrel-jack adapter:** the supply cord goes straight into the Dig-Uno's input terminal.
+- **18 AWG wire:** at under 3 A over less than a metre, 22 AWG drops under 0.2 V.
+- **Washers:** the M4 pan heads are wider than the 4.5 mm slots.
+- **Adhesive cable clips:** leftover VHB holds the wire runs down.
 
-**Optional IR blaster.** Only needed if you can't use Fast TV start; see [feasibility](feasibility.md#3-ir-blaster-fallback). It's the one part of the build that needs soldering:
+**Optional IR blaster.** Only needed if you can't use Fast TV start; see [feasibility](feasibility.md#3-ir-blaster-fallback).
 
 | Part | Qty | Notes |
 |---|---|---|
 | 940 nm IR LED (e.g. Vishay TSAL6200) | 1 | Aim it at the IR window on the TV's front bottom edge |
 | PN2222A NPN transistor | 1 | |
 | 1 kΩ (base) and 33 Ω (LED) resistors | 1 each | About 100 mA pulses from 5 V |
-| 3-pin female Dupont jumper + thin 2-core wire | 1.5 m | Plugs onto the Q1/Q2 header |
+| Female-female Dupont jumper wires | 3 | Cut one end off. They plug onto the Q1/Q2 header, and the spare 22 AWG wire carries the run to the LED. |
 
 ## Wiring
 
 ```
-                          ┌── Wago (+5V) ──┬──────────────► Dig-Uno power in  (+)
- GST25A05 ─► barrel ─18AWG┤                └── 18AWG ─────► strip END  +5V  (power injection)
-  5V 4A      adapter      └── Wago (GND) ──┬──────────────► Dig-Uno power in  (−)
-                                           └── 18AWG ─────► strip END  GND
+ GST25A05 cord (plug cut off) ─────────────► Dig-Uno power input  (+ / −)
 
- Dig-Uno LED output terminal ── 22AWG 3-core ──(3× Wago 221-412)──► strip START input leads
-     5V   ──────────────────────────────────────────────────────────►  +5V (red)
-     LED1 (GPIO16, level-shifted) ─────────────────────────────────►  DIN (green/white)
-     LED2   (unused)
-     GND  ──────────────────────────────────────────────────────────►  GND (white/black)
+ Dig-Uno LED output terminal
+     5V   ─┬─ 22AWG ─────────────────────────►  strip START  +5V pad
+           └─ 22AWG ─────────────────────────►  strip END    +5V pad   (power injection)
+     LED1 ─── 22AWG (GPIO16, level-shifted) ─►  strip START  DIN pad
+     LED2     (unused)
+     GND  ─┬─ 22AWG ─────────────────────────►  strip START  GND pad
+           └─ 22AWG ─────────────────────────►  strip END    GND pad
 
  Optional IR (Q1/Q2 header):  Q1 (GPIO15) ─[1k]─ PN2222 base; emitter → GND;
      collector → IR LED cathode; IR LED anode ─[33Ω]─ 5V.   Then set IR_LED_PIN 15.
 ```
 
 Notes:
-- **Why the supply splits.** The loop starts and ends at the same corner, so the strip gets power at both ends. The start is fed through the Dig-Uno's fused output; the end is fed straight from the supply, which has its own short-circuit protection. QuinLED's own guidance for 5 V strips of this length is to feed both ends.
-- **Joining the strip's leads.** Cut the JST plug off the strip's input pigtail and join the three leads to the 22 AWG run with Wago 221-412s. Do the same with the extra power leads at the strip's far end. Check the arrows on the strip: data must enter at the **start**.
-- **Common ground** is automatic: everything shares the supply's GND through the Wagos.
+- **Supply polarity.** After cutting off the barrel plug, check which lead is + with a multimeter (supply plugged in, leads apart) before landing them in the terminal.
+- **Both strip feeds share the Dig-Uno's fused output.** Two 22 AWG wires go into each of the 5V and GND screws: twist each pair's strands together and don't tin them. Tinned wire in a screw terminal loosens over time. The loop starts and ends at the same corner, so both runs are short. QuinLED's own guidance for 5 V strips of this length is to feed both ends.
+- **Strip ends.** Cut the JST plug and loose power leads off both ends of the strip, and solder the 22 AWG runs directly to the copper pads. Check the arrows: data must enter at the **start**. Leave the end's DIN/DOUT pad unconnected. The strip end's feed only needs two of the cable's three conductors.
+- **Common ground** is automatic: everything shares the supply's GND at the Dig-Uno.
 - **Don't cut strip power when "off".** An unpowered strip gets back-powered through its data line. Idle draw is about 1 mA per LED (≈0.6 W) plus about 0.5 W for the ESP32.
-- **Flash over USB-C with the supply unplugged**, or at least with the strip disconnected. After the first flash, updates go over Wi-Fi.
+- **Flash over USB-C with the supply unplugged.** After the first flash, updates go over Wi-Fi.
 
 ## Power budget
 
@@ -134,15 +136,15 @@ Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_moun
 
 | File | What | Print |
 |---|---|---|
-| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the supply wires **and USB-C access**, a notch on the LED end, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
+| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the supply cord **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
 | `strip_clip_10mm.stl` / `strip_clip_12mm.stl` | 45° clip that holds the strip facing outward and backward toward the firebox walls. The strip slides in from the end, and lips hold the PCB edges clear of the LEDs. | **Profile face down** (as exported). 20 needed. |
 
 The Dig-Uno fits with its power terminal and USB-C toward the window end and its LED output toward the notch end. The standoffs only fit that way round, or rotated 180°.
 
-**Installing the base:** use M4 × 12 screws with washers through the 4 mm plate, which gives about 7 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use a shorter screw rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
+**Installing the base:** use M4 × 12 pan-head screws through the 4 mm plate, which gives about 8 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use a shorter screw rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
 
 **Wi-Fi:** the board sits between the TV's metal chassis and the brick. Check the signal (`rssi` on the status page, in dBm). If it's worse than about −75, QuinLED sells an external-antenna version of the ESP32 board, and its lead can leave through the power window.
 
-**Strip placement:** put clips about 20 mm in from the TV's outer edge, every ~15 cm, plus one on each side of every corner (about 16–20 in total), with the channel opening pointing outward. **At corners, fold the strip rather than cutting it:** fold it back on itself at 45° in the gap between two LEDs, never across an LED, and don't crease hard. That keeps the build solder-free. Folding uses up about one LED's worth of length per corner, so count the LEDs on each side once installed and put those counts in `kLedLayout`. Clean the TV back with isopropyl alcohol before applying the VHB, and press for 30 s.
+**Strip placement:** put clips about 20 mm in from the TV's outer edge, every ~15 cm, plus one on each side of every corner (about 16–20 in total), with the channel opening pointing outward. **At corners, cut the strip at the copper cut marks and bridge the three pads with short lengths of the 22 AWG 3-conductor wire**, soldered on the bench before fitting. Folding the strip also works and saves the joints, but it stresses the flexible PCB and costs about one LED of length per corner. Clean the TV back with isopropyl alcohol before applying the VHB, and press for 30 s. If your per-side LED counts differ from 23/41/23/41, put them in `kLedLayout`.

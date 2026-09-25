@@ -21,9 +21,9 @@ flowchart LR
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
 - **The fire is generated, not captured.** It models the *light a fire casts* on its surroundings, not a flame seen head-on: a bottom-heavy heat field, three-band flicker, upward-drifting noise, and random flares. It's mapped through a linear-light ember palette that uses the strip's warm-white die, then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
 
-## Hardware (≈ $150–165 from scratch, including parts packs)
+## Hardware (≈ $125–135 from scratch)
 
-A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter, fuse and screw terminals) + SK6812 RGBW warm-white 5 V 60 LED/m strip + a Mean Well 5 V 4 A supply, in a 3D-printed enclosure that screws to the TV's VESA holes. The strip sits on 45° printed clips. The build is solder-free: screw terminals and Wago lever connectors. The survey of alternatives, full shopping list, wiring, and power budget are in [docs/hardware.md](docs/hardware.md).
+A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter, fuse and screw terminals) + SK6812 RGBW warm-white 5 V 60 LED/m strip + a Mean Well 5 V 4 A supply, in a 3D-printed enclosure that screws to the TV's VESA holes. The strip sits on 45° printed clips. Wiring is the Dig-Uno's screw terminals plus a handful of soldered joints, and the whole build uses only about ten separate purchases. The survey of alternatives, full shopping list, wiring, and power budget are in [docs/hardware.md](docs/hardware.md).
 
 ## Repository
 

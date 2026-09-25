@@ -119,7 +119,7 @@ module base() {
         translate([sx * boss_x, sy * boss_y, 0]) cylinder(d = boss_d, h = plate_t + inner_h);
       for (sx = [-1, 1], sy = [-1, 1])
         translate([sx * hole_dx / 2, sy * hole_dy / 2, plate_t - eps]) cylinder(d = standoff_d, h = standoff_h + eps);
-      // two anchors on the power side (supply lead + Wago splice), one on the LED side
+      // two anchors on the power side (supply cord), one on the LED side (strip wiring)
       for (y = [-9, 9]) translate([-anchor_x, y, plate_t - eps]) zip_anchor();
       translate([anchor_x, 0, plate_t - eps]) zip_anchor();
     }
