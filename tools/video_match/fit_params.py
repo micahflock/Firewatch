@@ -15,13 +15,13 @@ import numpy as np
 from stats import led_zones, read_preview_dump, summarize
 
 WEIGHTS = {
-    "total_cv": 3, "bottom_cv": 3, "top_cv": 2, "left_cv": 1, "right_cv": 1,
-    "top_over_bottom": 2, "left_over_bottom": 1, "right_over_bottom": 1,
-    "corr_left_right": 1, "corr_top_bottom": 1, "color_g_over_r": 0.5, "color_b_over_r": 0,
+    "total_cv": 3, "low_cv": 3, "top_cv": 2, "left_cv": 1, "right_cv": 1,
+    "top_over_low": 2, "left_over_low": 1, "right_over_low": 1,
+    "corr_left_right": 1, "corr_top_low": 1, "color_g_over_r": 0.5, "color_b_over_r": 0,
 }
 SPACE = {  # name: (low, high)
     "heatTop": (0.5, 1.0), "heatBottom": (0.75, 1.05), "centerBias": (0.0, 0.3),
-    "flickerBottom": (0.05, 0.6), "flickerTop": (0.6, 2.0),
+    "flickerBottom": (0.0, 0.6), "flickerTop": (0.6, 2.0),
     "localAmount": (0.2, 1.6), "breathAmount": (0.0, 0.1), "flareMax": (0.05, 0.6),
 }
 
@@ -51,8 +51,8 @@ def main():
     target = json.load(open(a.target))["stats"]
     rng = np.random.default_rng(a.seed)
     # Start from the firmware's current defaults (fire.h).
-    best_p = {"heatTop": 0.72, "heatBottom": 1.02, "centerBias": 0.19, "flickerBottom": 0.13,
-              "flickerTop": 0.73, "localAmount": 1.20, "breathAmount": 0.06, "flareMax": 0.19}
+    best_p = {"heatTop": 0.83, "heatBottom": 0.85, "centerBias": 0.05, "flickerBottom": 0.05,
+              "flickerTop": 0.84, "localAmount": 0.99, "breathAmount": 0.036, "flareMax": 0.24}
     best_s = run(a.preview, best_p)
     best = score(best_s, target)
     print(f"defaults: score {best:.2f}", file=sys.stderr)

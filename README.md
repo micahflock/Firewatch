@@ -4,7 +4,7 @@ Fireplace ambiance for a TCL 32S335 Roku TV sitting in a real firebox. An addres
 
 ![Simulated glow](docs/img/preview.gif)
 
-*Offline render of the firmware's fire engine: a steady amber ember glow along the bottom, with the flicker concentrated toward the top, where the flame tips would be.*
+*Offline render of the firmware's fire engine, with LEDs up the sides and across the top: a steady amber glow low on the sides, with the flicker concentrated across the top, where the flame tips would be.*
 
 ## How it works
 
@@ -14,14 +14,14 @@ flowchart LR
   W[firewatch.local page,<br>phone shortcut, button] -->|/on /off| E
   E[ESP32] -->|ECP: device-info, active-app<br>every 2 s| TV
   E -->|ECP: PowerOn/Off,<br>launch YouTube video| TV
-  E -->|I2S DMA, 120 fps| L[SK6812 RGBW strip<br>128 LEDs around TV back]
+  E -->|I2S DMA, 120 fps| L[SK6812 RGBW strip<br>87 LEDs: sides + top of TV back]
 ```
 
 - **One action either way.** Turning the TV on by any means makes the ESP32 start the glow and launch the fire video. Turning on the scene from Firewatch wakes the TV over Roku's network API (ECP). Off works the same way in both directions. See [feasibility](docs/feasibility.md).
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
-- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: a steady, bottom-heavy ember glow with flicker that grows toward the flame tips, independent left/right movement, and occasional flares. Its parameters and amber palette were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
+- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: an even amber glow that's steady low on the sides, with flicker that grows toward the flame tips across the top, independent left/right movement, and occasional small flares. Its parameters and amber palette were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
 
-## Hardware (≈ $130–140 from scratch)
+## Hardware (≈ $115–125 from scratch)
 
 A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter, fuse and screw terminals) + SK6812 RGBW warm-white 5 V 60 LED/m strip + a Mean Well 5 V 4 A supply, in a 3D-printed enclosure that screws to the TV's VESA holes. The strip sits on 45° printed clips. Wiring is the Dig-Uno's screw terminals plus a handful of soldered joints, and the whole build uses only about ten separate purchases. The survey of alternatives, full shopping list, wiring, and power budget are in [docs/hardware.md](docs/hardware.md).
 

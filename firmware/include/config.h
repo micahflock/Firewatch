@@ -11,14 +11,13 @@
 #define LED_PIN 16
 
 // Strip wiring, in data order, as seen FROM THE FRONT of the TV (x: 0=left, 1=right;
-// y: 0=bottom, 1=top). Default: 60 LED/m loop inset ~20 mm on a TCL 32S335 back,
-// data entering at the bottom-left corner (front view) and running clockwise.
-// A run with count 0 is skipped, e.g. if you leave the bottom edge unlit.
+// y: 0=bottom, 1=top). Default: 60 LED/m on the left side, top and right side of a TCL
+// 32S335 back, inset ~20 mm, no bottom edge. Data enters at the bottom of the left side
+// (front view) and runs clockwise, ending at the bottom of the right side.
 static const fw::Segment kLedLayout[] = {
     {0, 0, 0, 1, 23},  // left side, bottom -> top
     {0, 1, 1, 1, 41},  // top, left -> right
     {1, 1, 1, 0, 23},  // right side, top -> bottom
-    {1, 0, 0, 0, 41},  // bottom, right -> left
 };
 
 // Power budget for the whole 5 V rail (PSU is 4 A; keep headroom).

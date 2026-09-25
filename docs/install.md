@@ -39,7 +39,7 @@ The Dig-Uno ships with WLED installed, which is handy for proving the wiring bef
 
 1. Land the barrel pigtail's leads in the Dig-Uno's power input (+ found with a multimeter), then plug in the supply. Solder the 22 AWG start leads to the strip and land them in the LED output (5V / LED1 / GND), per the [wiring diagram](hardware.md#wiring). Lay the strip loose on a table.
 2. Power up, join the `WLED-AP` Wi-Fi network from your phone (password `wled1234`), and give it your home Wi-Fi.
-3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **128**, and data GPIO **16**. Then pick the "Fire 2012" effect.
+3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **87**, and data GPIO **16**. Then pick the "Fire 2012" effect.
 4. If the whole strip lights with sensible colors, the wiring is right. WLED can be reinstalled any time from [install.wled.me](https://install.wled.me) if you ever want it back.
 
 ## 4. Firmware
@@ -63,7 +63,7 @@ What to set in [`config.h`](../firmware/include/config.h):
 |---|---|
 | `FIRE_CONTENT_ID` | The YouTube fireplace video ID. It's already set to yours (`CF00JqnCcsU`). |
 | `ROKU_HOST` | The TV's reserved IP address. If it's empty, the TV is found by SSDP discovery. |
-| `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23/41 LEDs starting at the bottom-left corner, running up the left side and clockwise. |
+| `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
 | `POWER_BUDGET_MA` | Supply current cap (3000 mA for the 4 A supply) |
 | `DEFAULT_BRIGHTNESS` | Start value. After that, the web page's slider sets it, and it's saved across reboots. |
@@ -75,13 +75,13 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 
 ## 5. Build and install
 
-1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 20× `strip_clip_10mm.stl` (see the [print notes](hardware.md#mounting)).
-2. On the bench, cut the strip into its four runs (23/41/23/41 LEDs at the cut marks). Solder the corner bridges and the 22 AWG leads at the start and end, and heat-shrink each joint (see the [wiring notes](hardware.md#wiring)).
+1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 14× `strip_clip_10mm.stl` (see the [print notes](hardware.md#mounting)).
+2. On the bench, cut the strip into its three runs (23/41/23 LEDs at the cut marks). Solder the two corner bridges and the 22 AWG lead at the start, heat-shrink each joint, and cover the far end's pads (see the [wiring notes](hardware.md#wiring)).
 3. Find + on the barrel pigtail with a multimeter and land its leads in the Dig-Uno's power input. Check that the LED1 jumper is on **GPIO16**; the firmware refuses to build for GPIO1.
-4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the corner where the strip starts.
-5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the strip wiring in the LED output terminal, with two wires each in 5V and GND. Cable-tie the pigtail's jack and the strip leads to the anchors. From then on, the supply unplugs at the jack.
+4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the bottom-left corner (front view), where the strip starts.
+5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the strip's 22 AWG lead in the LED output terminal (5V / LED1 / GND). Cable-tie the pigtail's jack and the strip leads to the anchors. From then on, the supply unplugs at the jack.
 6. Stick on the clips and fit the strip. Hold the wire runs down with scraps of VHB.
-7. Open `http://firewatch.local` and press **Light the fire**. Check that the brightest amber glow is at the bottom (if it isn't, the layout direction is reversed). Then fasten the lid with four M2 × 8 screws.
+7. Open `http://firewatch.local` and press **Light the fire**. Check that the steady part of the glow is low on the sides and the lively flicker is across the top. If it's the other way round, the layout direction is reversed. Then fasten the lid with four M2 × 8 screws.
 
 ## 6. Daily use
 
