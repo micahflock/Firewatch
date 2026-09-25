@@ -3,3 +3,5 @@ firmware/include/secrets.h
 .vscode/
 tools/preview/preview
 __pycache__/
+tools/video_match/storyboard_cache/
+tools/video_match/video_stats.json

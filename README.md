@@ -4,7 +4,7 @@ Fireplace ambiance for a TCL 32S335 Roku TV sitting in a real firebox. An addres
 
 ![Simulated glow](docs/img/preview.gif)
 
-*Offline render of the firmware's fire engine. The glow is brightest and most amber low and in the center, and redder toward the top, with slow sway, flicker, and occasional flares.*
+*Offline render of the firmware's fire engine: a steady amber ember glow along the bottom, with the flicker concentrated toward the top, where the flame tips would be.*
 
 ## How it works
 
@@ -19,7 +19,7 @@ flowchart LR
 
 - **One action either way.** Turning the TV on by any means makes the ESP32 start the glow and launch the fire video. Turning on the scene from Firewatch wakes the TV over Roku's network API (ECP). Off works the same way in both directions. See [feasibility](docs/feasibility.md).
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
-- **The fire is generated, not captured.** It models the *light a fire casts* on its surroundings, not a flame seen head-on: a bottom-heavy heat field, three-band flicker, upward-drifting noise, and random flares. It's mapped through a linear-light ember palette that uses the strip's warm-white die, then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
+- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: a steady, bottom-heavy ember glow with flicker that grows toward the flame tips, independent left/right movement, and occasional flares. Its parameters and amber palette were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
 
 ## Hardware (≈ $130–140 from scratch)
 
@@ -35,7 +35,8 @@ A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter
 | [`firmware/`](firmware) | PlatformIO project (ESP32, Arduino) |
 | [`firmware/lib/firecore/`](firmware/lib/firecore/src) | Portable core: fire engine, output stage, scene state machine, ECP parsers (host-tested) |
 | [`hardware/mount/`](hardware/mount) | Parametric OpenSCAD source and printable STLs |
-| [`tools/preview/`](tools/preview) | Renders the fire engine to a GIF on your computer |
+| [`tools/preview/`](tools/preview) | Renders the fire engine to a GIF on your computer (optionally with video frames on the TV) |
+| [`tools/video_match/`](tools/video_match) | Measures a fireplace video's light from YouTube storyboards and fits the engine to it |
 
 ## Quick start
 

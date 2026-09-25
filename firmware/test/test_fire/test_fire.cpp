@@ -42,23 +42,40 @@ void test_palette_monotonic_brightness() {
   }
 }
 
+static float lum(const Rgbw& c) { return 0.21f * c.r + 0.72f * c.g + 0.76f * c.w; }
+
+static double cv(const std::vector<double>& v) {
+  double m = 0, s = 0;
+  for (double x : v) m += x;
+  m /= v.size();
+  for (double x : v) s += (x - m) * (x - m);
+  return std::sqrt(s / v.size()) / m;
+}
+
 void test_fire_is_bottom_heavy_and_alive() {
   FireEngine fire(loop128(), 1234);
   std::vector<Rgbw> px(fire.size());
-  double top = 0, bottom = 0, change = 0;
+  double change = 0;
+  std::vector<double> top, bottom;
   std::vector<float> last(fire.size(), 0);
   for (int f = 0; f < 3000; ++f) {
     fire.render(f / 100.0, px.data());
+    double t = 0, b = 0;
     for (size_t i = 0; i < px.size(); ++i) {
-      float r = px[i].r;
-      if (i >= 23 && i < 64) top += r;
-      if (i >= 87) bottom += r;
-      if (f) change += std::fabs(r - last[i]);
-      last[i] = r;
+      float l = lum(px[i]);
+      if (i >= 23 && i < 64) t += l;
+      if (i >= 87) b += l;
+      if (f) change += std::fabs(l - last[i]);
+      last[i] = l;
     }
+    top.push_back(t);
+    bottom.push_back(b);
   }
-  TEST_ASSERT_TRUE(bottom > top * 1.2);
-  TEST_ASSERT_TRUE(change / (3000.0 * 128) > 0.002);  // flickers
+  double sumT = 0, sumB = 0;
+  for (size_t i = 0; i < top.size(); ++i) sumT += top[i], sumB += bottom[i];
+  TEST_ASSERT_TRUE(sumB > sumT * 1.2);           // embers low: brighter at the bottom
+  TEST_ASSERT_TRUE(cv(top) > 2.0 * cv(bottom));  // steady ember bed, lively flame tips
+  TEST_ASSERT_TRUE(change / (3000.0 * 128) > 0.001);  // flickers
   TEST_ASSERT_TRUE(change / (3000.0 * 128) < 0.05);   // but not strobing at 100 fps
 }
 
