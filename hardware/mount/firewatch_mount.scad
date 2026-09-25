@@ -1,50 +1,60 @@
 // Firewatch mounting hardware — parametric, OpenSCAD 2021+.
 //
-//   part = "base"  VESA plate + electronics box (holds a 50x70 mm perfboard)
-//   part = "lid"   box lid with vents; presses the board down at its corners
+//   part = "base"  VESA plate + enclosure for a QuinLED Dig-Uno v3 (with QuinLED-ESP32)
+//   part = "lid"   vented lid
 //   part = "clip"  45-degree LED strip clip (stick to the TV back with VHB tape)
 //   part = "all"   assembly preview (not for printing)
 //
 // Export:  openscad -D 'part="base"' -o base.stl firewatch_mount.scad
 // Units: mm. Print in PETG (or PLA — the TV back stays well under PLA's softening point).
+//
+// Board orientation (matches QuinLED's dimension drawing, viewed from above):
+//   -X edge: power input terminal + the ESP32's USB-C port
+//   +X edge: LED output terminal (5V / LED1 / LED2 / GND)
+//   -Y edge: Q1/Q2 header (optional IR LED lead)
 
 part = "all";
 
 /* [VESA] */
 // Slots run diagonally from the 75x75 to the 100x100 hole positions, so one plate fits
-// either pattern (the TCL 32S335 is 100x100).
+// either pattern (the TCL 32S335 is 100x100, M4).
 vesa_min = 75;
 vesa_max = 100;
 screw_d = 4.5;        // M4 clearance; use 6.6 for M6 TVs
 plate_t = 4;
 arm_w = 14;           // width of the arms around the VESA slots
 
-/* [Board] */
-board_w = 50;         // standard 50x70 perfboard
-board_l = 70;
-board_t = 1.6;
-board_gap = 0.5;      // total clearance per axis
-standoff_h = 4;       // room for solder joints under the board
-corner_keepout = 5;   // keep this much of each board corner free of parts
+/* [Dig-Uno v3] */
+// From QuinLED's published dimension drawing.
+pcb_x = 48.52;
+pcb_y = 39.37;
+hole_dx = 43.27;      // M2 hole centers
+hole_dy = 34.02;
+stack_h = 30;         // PCB underside to top of ESP32/capacitor, per QuinLED
+standoff_h = 5;
+standoff_d = 5.5;
+m2_pilot = 1.6;       // M2 self-tapping into plastic (use 3.2 for M2 heat-set inserts)
+margin_x = 9;         // room for the terminal wires to bend, both ends
+margin_y = 5;
 
 /* [Box] */
 wall = 2.4;
-inner_h = 26;         // floor to lid underside; fits an ESP32 DevKit on female headers
-usb_notch_w = 13;
-usb_notch_bottom = 13; // notch floor above the plate; ESP32 USB sits ~17 mm up
-cable_notch_w = 8;
-cable_notch_depth = 10;
-cable_notch_x = 12;   // +/- offset of the two cable notches (power in, strip out)
+inner_h = standoff_h + stack_h + 2;
+power_window_w = 36;  // -X wall: power wires + USB-C access
+led_notch_w = 18;     // +X wall: LED output wires
+window_floor = 8;     // openings run from here to the top of the wall
+ir_notch_w = 10;      // -Y wall: optional IR lead from the Q1/Q2 header
+ir_notch_x = -3;
+ir_notch_depth = 14;
 
 /* [Lid] */
 lid_t = 2.4;
 lip_h = 2;
 lip_t = 1.2;
 fit = 0.3;
-lid_screw_pilot = 2.7; // M3 self-tapping into plastic (use 4.0 for M3 heat-set inserts)
-lid_screw_clear = 3.4;
-boss_d = 8;
-boss_y = 20;
+lid_screw_clear = 2.4; // M2
+boss_d = 7;
+boss_x = 20;
 
 /* [Strip clip] */
 strip_w = 10;          // PCB width of the LED strip (10 or 12 mm are common)
@@ -58,10 +68,12 @@ lip_over = 1.0;        // how far the lips overlap the PCB edge (clear of the LE
 $fn = 48;
 eps = 0.01;
 
-in_w = board_w + board_gap;
-in_l = board_l + board_gap;
-out_w = in_w + 2 * wall;
-out_l = in_l + 2 * wall;
+in_x = pcb_x + 2 * margin_x;
+in_y = pcb_y + 2 * margin_y;
+out_x = in_x + 2 * wall;
+out_y = in_y + 2 * wall;
+boss_y = out_y / 2 + boss_d / 2 - wall;
+anchor_x = out_x / 2 + 8;
 
 module rounded_square(size, r) {
   offset(r) square([size[0] - 2 * r, size[1] - 2 * r], center = true);
@@ -76,16 +88,16 @@ module vesa_slots() {
 }
 
 module zip_anchor() {
-  // Bridge a cable tie passes under; the cable runs along Y beside it.
+  // Bridge a cable tie passes under; the cable runs along X over it.
   difference() {
-    translate([-5, -3, 0]) cube([10, 6, 5]);
-    translate([-5 - eps, -2, 1.2]) cube([10 + 2 * eps, 4, 2.2]);
+    translate([-3, -5, 0]) cube([6, 10, 5]);
+    translate([-2, -5 - eps, 1.2]) cube([4, 10 + 2 * eps, 2.2]);
   }
 }
 
 module plate_2d() {
   // Pad under the box and cable anchors, plus four arms out to the VESA slots.
-  translate([0, -6]) rounded_square([out_w + 8, out_l + 22], 4);
+  rounded_square([2 * anchor_x + 12, out_y + 8], 4);
   for (sx = [-1, 1], sy = [-1, 1])
     hull() {
       translate([sx * 12, sy * 12]) circle(d = 18);
@@ -98,63 +110,56 @@ module base() {
   difference() {
     union() {
       linear_extrude(plate_t) plate_2d();
-      // box walls
       translate([0, 0, plate_t]) linear_extrude(inner_h)
         difference() {
-          rounded_square([out_w, out_l], 2);
-          square([in_w, in_l], center = true);
+          rounded_square([out_x, out_y], 2);
+          square([in_x, in_y], center = true);
         }
-      // lid screw bosses on the long sides, clear of the VESA slots
       for (sx = [-1, 1], sy = [-1, 1])
-        translate([sx * (out_w / 2 + boss_d / 2 - wall), sy * boss_y, 0])
-          cylinder(d = boss_d, h = plate_t + inner_h);
-      // board standoffs in the corners
+        translate([sx * boss_x, sy * boss_y, 0]) cylinder(d = boss_d, h = plate_t + inner_h);
       for (sx = [-1, 1], sy = [-1, 1])
-        translate([sx * (in_w / 2 - corner_keepout / 2), sy * (in_l / 2 - corner_keepout / 2), plate_t + standoff_h / 2])
-          cube([corner_keepout, corner_keepout, standoff_h], center = true);
-      // cable tie anchors outside the cable end
-      for (sx = [-1, 1])
-        translate([sx * cable_notch_x, -(out_l / 2 + 8), plate_t - eps]) zip_anchor();
+        translate([sx * hole_dx / 2, sy * hole_dy / 2, plate_t - eps]) cylinder(d = standoff_d, h = standoff_h + eps);
+      // two anchors on the power side (supply lead + Wago splice), one on the LED side
+      for (y = [-9, 9]) translate([-anchor_x, y, plate_t - eps]) zip_anchor();
+      translate([anchor_x, 0, plate_t - eps]) zip_anchor();
     }
     vesa_slots();
-    // pilot holes for lid screws
-    for (sx = [-1, 1], sy = [-1, 1])
-      translate([sx * (out_w / 2 + boss_d / 2 - wall), sy * boss_y, plate_t + inner_h - 12])
-        cylinder(d = lid_screw_pilot, h = 12 + eps);
-    // USB access (ESP32 end, +Y)
-    translate([-usb_notch_w / 2, out_l / 2 - wall - 1, plate_t + usb_notch_bottom])
-      cube([usb_notch_w, wall + 2, inner_h]);
-    // cable notches (terminal end, -Y)
-    for (sx = [-1, 1])
-      translate([sx * cable_notch_x - cable_notch_w / 2, -out_l / 2 - 1, plate_t + inner_h - cable_notch_depth])
-        cube([cable_notch_w, wall + 2, cable_notch_depth + eps]);
+    for (sx = [-1, 1], sy = [-1, 1]) {
+      translate([sx * hole_dx / 2, sy * hole_dy / 2, plate_t + standoff_h - 7]) cylinder(d = m2_pilot, h = 7 + eps);
+      translate([sx * boss_x, sy * boss_y, plate_t + inner_h - 8]) cylinder(d = m2_pilot, h = 8 + eps);
+    }
+    translate([-out_x / 2 - 1, -power_window_w / 2, plate_t + window_floor]) cube([wall + 2, power_window_w, inner_h]);
+    translate([out_x / 2 - wall - 1, -led_notch_w / 2, plate_t + window_floor]) cube([wall + 2, led_notch_w, inner_h]);
+    translate([ir_notch_x - ir_notch_w / 2, -out_y / 2 - 1, plate_t + inner_h - ir_notch_depth])
+      cube([ir_notch_w, wall + 2, ir_notch_depth + eps]);
   }
 }
 
 module lid() {
   // Modeled upside down relative to the base: printed top face down on the bed.
-  post_h = inner_h - standoff_h - board_t - 0.1;
   difference() {
     union() {
-      linear_extrude(lid_t) rounded_square([out_w, out_l], 2);
+      linear_extrude(lid_t) rounded_square([out_x, out_y], 2);
       for (sx = [-1, 1], sy = [-1, 1])
-        translate([sx * (out_w / 2 + boss_d / 2 - wall), sy * boss_y, 0]) cylinder(d = boss_d, h = lid_t);
-      // locating lip just inside the walls
+        translate([sx * boss_x, sy * boss_y, 0]) cylinder(d = boss_d, h = lid_t);
       translate([0, 0, lid_t - eps]) linear_extrude(lip_h)
         difference() {
-          square([in_w - fit, in_l - fit], center = true);
-          square([in_w - fit - 2 * lip_t, in_l - fit - 2 * lip_t], center = true);
+          square([in_x - fit, in_y - fit], center = true);
+          square([in_x - fit - 2 * lip_t, in_y - fit - 2 * lip_t], center = true);
         }
-      // corner posts that clamp the board onto the standoffs
-      for (sx = [-1, 1], sy = [-1, 1])
-        translate([sx * (in_w / 2 - corner_keepout / 2 - fit), sy * (in_l / 2 - corner_keepout / 2 - fit), lid_t - eps])
-          linear_extrude(post_h) square([corner_keepout - 1, corner_keepout - 1], center = true);
     }
     for (sx = [-1, 1], sy = [-1, 1])
-      translate([sx * (out_w / 2 + boss_d / 2 - wall), sy * boss_y, -eps]) cylinder(d = lid_screw_clear, h = lid_t + 2 * eps);
-    // vent slots
-    for (i = [-3 : 3])
-      translate([i * 5.5 - 1, -18, -eps]) cube([2, 36, lid_t + 2 * eps]);
+      translate([sx * boss_x, sy * boss_y, -eps]) cylinder(d = lid_screw_clear, h = lid_t + 2 * eps);
+    for (i = [-4 : 4])
+      translate([i * 6 - 1, -15, -eps]) cube([2, 30, lid_t + 2 * eps]);
+  }
+}
+
+module board_ghost() {
+  // Dig-Uno envelope, for the assembly preview only.
+  translate([0, 0, plate_t + standoff_h]) {
+    color("royalblue") translate([-pcb_x / 2, -pcb_y / 2, 0]) cube([pcb_x, pcb_y, 1.6]);
+    color("silver", 0.5) translate([-pcb_x / 2 + 6, -pcb_y / 2 + 3, 1.6]) cube([pcb_x - 8, pcb_y - 6, stack_h - 1.6]);
   }
 }
 
@@ -188,6 +193,7 @@ else if (part == "lid") lid();
 else if (part == "clip") clip();
 else {
   base();
-  translate([0, 0, plate_t + inner_h + lid_t]) mirror([0, 0, 1]) color("orange", 0.6) lid();
+  board_ghost();
+  translate([0, 0, plate_t + inner_h + lid_t + 25]) mirror([0, 0, 1]) color("orange", 0.6) lid();
   translate([85, 0, 0]) clip();
 }

@@ -67,7 +67,7 @@ ECP is Roku's official LAN API: plain HTTP on port 8060 ([Roku docs](https://dev
 
 - TCL Roku TVs accept NEC IR codes with **discrete** power commands: `0x57E316E9` = on, `0x57E318E7` = off (the 32-bit form used by IRremoteESP8266). These are community-sourced ([code list](https://gist.github.com/DDRBoxman/c68b68e41a47338496ba8cbd1bb5d20e)). Discrete codes are safe to repeat, unlike a power toggle.
 - IR can't deep-link to a video. The firmware runs a **hybrid**: IR wakes the TV, the TV joins Wi-Fi within about 10–20 s, and then ECP launches the fire as usual. With `IR_LED_PIN` set, the IR power-on is sent alongside every ECP wake.
-- Hardware: an IR LED, one NPN transistor, and two resistors (about $2), with the LED on a thin lead aimed at the IR receiver window on the TV's front bottom edge. See [hardware.md](hardware.md#optional-ir-blaster).
+- Hardware: an IR LED, one NPN transistor, and two resistors (about $2), plugged onto the Dig-Uno's Q1 header (GPIO15), with the LED on a thin lead aimed at the IR receiver window on the TV's front bottom edge. See [hardware.md](hardware.md#shopping-list-from-scratch).
 - Following the TV's power still works without fast start: the TV is unreachable in standby and reachable once it's on, and the firmware treats three missed polls in a row as "off".
 
 ## 4. Following the TV's power (the actual single action)

@@ -21,9 +21,9 @@ flowchart LR
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
 - **The fire is generated, not captured.** It models the *light a fire casts* on its surroundings, not a flame seen head-on: a bottom-heavy heat field, three-band flicker, upward-drifting noise, and random flares. It's mapped through a linear-light ember palette that uses the strip's warm-white die, then temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
 
-## Hardware (≈ $85)
+## Hardware (≈ $150–165 from scratch, including parts packs)
 
-ESP32 DevKitC + SK6812 RGBW warm-white 5 V 60 LED/m + a 74AHCT125 level shifter on a perfboard + a Mean Well 5 V 4 A supply, in a 3D-printed enclosure that screws to the TV's VESA holes. The strip sits on 45° printed clips. The survey of alternatives, full parts list, wiring, and power budget are in [docs/hardware.md](docs/hardware.md).
+A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter, fuse and screw terminals) + SK6812 RGBW warm-white 5 V 60 LED/m strip + a Mean Well 5 V 4 A supply, in a 3D-printed enclosure that screws to the TV's VESA holes. The strip sits on 45° printed clips. The build is solder-free: screw terminals and Wago lever connectors. The survey of alternatives, full shopping list, wiring, and power budget are in [docs/hardware.md](docs/hardware.md).
 
 ## Repository
 
@@ -41,10 +41,9 @@ ESP32 DevKitC + SK6812 RGBW warm-white 5 V 60 LED/m + a 74AHCT125 level shifter 
 
 ```sh
 # 1. TV: Fast TV start ON, Control by mobile apps = Default, Power On = Home
-# 2. Prove ECP works: see docs/install.md step 2
+# 2. Prove ECP works (docs/install.md step 2), then bench-test the strip with WLED (step 3)
 cd firmware
 cp include/secrets.example.h include/secrets.h && $EDITOR include/secrets.h
-$EDITOR include/config.h            # set FIRE_CONTENT_ID to your YouTube video id
 pio test -e native && pio run -e esp32 -t upload
 open http://firewatch.local
 ```

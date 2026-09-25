@@ -21,61 +21,71 @@ curl -s http://TV:8060/query/device-info | grep -E "model-name|power-mode|wifi-m
 # Put the TV in standby with the remote, wait 10 s, then:
 curl -d '' http://TV:8060/keypress/PowerOn        # the screen should come on
 
-# Launch your fire video (the id is the part after v= in the YouTube URL):
-curl -d '' "http://TV:8060/launch/837?contentId=VIDEO_ID&mediaType=movie"
+# Launch your fire video (youtu.be/CF00JqnCcsU):
+curl -d '' "http://TV:8060/launch/837?contentId=CF00JqnCcsU&mediaType=movie"
 
 curl -s http://TV:8060/query/active-app           # expect <app id="837" ...>YouTube</app>
 curl -d '' http://TV:8060/keypress/PowerOff
 ```
 
 - If `keypress` returns **403** or "limited mode", recheck step 1.2.
-- If `PowerOn` fails from standby, fast TV start isn't holding the network up. Use the [IR fallback](hardware.md#optional-ir-blaster).
+- If `PowerOn` fails from standby, fast TV start isn't holding the network up. Use the [IR fallback](hardware.md#shopping-list-from-scratch).
 
 While you're there, do the smart-plug [power-restore test](feasibility.md#1-smart-plug-only-the-no-code-option).
 
-## 3. Firmware
+## 3. Bench test with WLED (no code)
+
+The Dig-Uno ships with WLED installed, which is handy for proving the wiring before you flash anything.
+
+1. Wire the supply and strip as in the [wiring diagram](hardware.md#wiring), with the strip laid loose on a table.
+2. Power up, join the `WLED-AP` Wi-Fi network from your phone (password `wled1234`), and give it your home Wi-Fi.
+3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **128**, and data GPIO **16**. Then pick the "Fire 2012" effect.
+4. If the whole strip lights with sensible colors, the wiring is right. WLED can be reinstalled any time from [install.wled.me](https://install.wled.me) if you ever want it back.
+
+## 4. Firmware
 
 Requires [PlatformIO](https://platformio.org/install/cli) (`pip install platformio`).
 
 ```sh
 cd firmware
 cp include/secrets.example.h include/secrets.h   # Wi-Fi SSID/password, OTA password
-$EDITOR include/config.h                          # FIRE_CONTENT_ID, ROKU_HOST, LED layout
+$EDITOR include/config.h                          # ROKU_HOST, LED layout
 pio test -e native                                # host unit tests
-pio run -e esp32 -t upload                        # first flash over USB
+pio run -e esp32 -t upload                        # first flash over the Dig-Uno's USB-C
 pio device monitor                                # logs: [wifi] ... [roku] ...
 ```
 
-Later updates go over Wi-Fi: `pio run -e esp32-ota -t upload`.
+For the first USB flash, **unplug the 5 V supply** (USB powers the board by itself). Later updates go over Wi-Fi with `pio run -e esp32-ota -t upload`, so the board can stay in its enclosure.
 
 What to set in [`config.h`](../firmware/include/config.h):
 
 | Setting | What |
 |---|---|
-| `FIRE_CONTENT_ID` | Your YouTube fireplace video ID. If it's empty, YouTube only opens to its home screen. |
+| `FIRE_CONTENT_ID` | The YouTube fireplace video ID. It's already set to yours (`CF00JqnCcsU`). |
 | `ROKU_HOST` | The TV's reserved IP address. If it's empty, the TV is found by SSDP discovery. |
 | `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23/41 LEDs starting at the bottom-left corner, running up the left side and clockwise. |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
 | `POWER_BUDGET_MA` | Supply current cap (3000 mA for the 4 A supply) |
 | `DEFAULT_BRIGHTNESS` | Start value. After that, the web page's slider sets it, and it's saved across reboots. |
 | `FOLLOW_TV` | 1 = TV power drives the glow (recommended) |
-| `IR_LED_PIN` | The GPIO for the optional IR LED (−1 = none) |
+| `IR_LED_PIN` | The GPIO for the optional IR LED: 15 (the Dig-Uno's Q1), or −1 for none |
+| `LED_PIN`, `BUTTON_PIN` | Already match the Dig-Uno (LED1 = GPIO16, button = GPIO0) |
 
 To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/firecore/src/fire.h): flicker bands, rise speed, flare rate, and so on. [`tools/preview`](../tools/preview) renders the result to a GIF on your computer without any hardware.
 
-## 4. Build and install
+## 5. Build and install
 
 1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 20× `strip_clip_10mm.stl` (see the [print notes](hardware.md#mounting)).
-2. Solder the perfboard per the [wiring diagram](hardware.md#wiring). Keep the 5 mm corners clear.
-3. Before connecting the strip, power the board from the supply and check for 5.0 V on J2/J3 and about 4.7 V at the ESP32's 5V pin.
-4. Bench test: connect the strip loosely, flash, open `http://firewatch.local`, and press **Light the fire**.
-5. Screw the base onto the TV's VESA holes (M4 × 12 + washers). Drop the board in, run the wires out through the notches, and fasten the lid.
-6. Stick on the clips, fit the strip, and bridge the corners. Wire J2 to the strip's start and J3 to its end.
-7. Cable-tie the supply lead and strip wires to the anchors.
+2. Check that the Dig-Uno's LED1 jumper is on **GPIO16**. The firmware refuses to build for GPIO1.
+3. Screw the base onto the TV's VESA holes (M4 × 12 + washers), with the power window facing the corner where the strip starts.
+4. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window.
+5. Wire it up per the [wiring diagram](hardware.md#wiring): supply → Wagos → Dig-Uno power input and strip end; Dig-Uno LED output → strip start. Cable-tie the supply lead, the Wagos and the strip wires to the anchors.
+6. Stick on the clips, fit the strip, and fold the corners. Count the LEDs per side and update `kLedLayout` if the counts differ from 23/41/23/41.
+7. Open `http://firewatch.local` and press **Light the fire**. Check that the brightest amber glow is at the bottom (if it isn't, the layout direction is reversed). Then fasten the lid with four M2 × 8 screws.
 
-## 5. Daily use
+## 6. Daily use
 
-- **On:** press power on the Roku remote. The glow swells in, and within a few seconds the Roku goes from Home to the fire video. You can also use `http://firewatch.local/on` (bookmark it or add it to a phone shortcut) or the ESP32's BOOT button.
+- **On:** press power on the Roku remote. The glow swells in, and within a few seconds the Roku goes from Home to the fire video. You can also use `http://firewatch.local/on` (bookmark it or add it to a phone shortcut) or the Dig-Uno's button.
 - **Off:** press power on the remote (the glow fades out), or use `/off`, which also turns the TV off.
 - **Video stuck or paused:** press **Restart video** on the web page, or use `/relaunch`.
 
@@ -88,7 +98,7 @@ Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightnes
 | `lastError` mentions *Control by mobile apps* | Step 1.2 |
 | `tv: unreachable` while the TV is on | Wrong `ROKU_HOST`, or client isolation / a guest network on the router |
 | TV doesn't wake from the web page | Fast TV start is off → turn it on, or fit the IR LED |
-| Fire video doesn't start | `FIRE_CONTENT_ID` is empty or wrong; try the `curl` launch from step 2 |
-| First LEDs flicker or show wrong colors | Missing common ground, the level shifter is bypassed, or the data wire is too long |
+| Fire video doesn't start | Try the `curl` launch from step 2; if that fails too, the video may be region-locked or removed, so pick another and update `FIRE_CONTENT_ID` |
+| First LEDs flicker or show wrong colors | Data wired to LED2 instead of LED1, the LED1 jumper not on GPIO16, a loose Wago, or data entering the wrong end of the strip (check the arrows) |
 | Colors look green-tinged | `LED_RGBW` doesn't match the strip, or it's a GRBW vs RGBW variant (change `NeoGrbwFeature` in `leds.cpp`) |
 | Glow too dim on sooty brick | Raise the brightness slider; if the current estimate hits the cap, raise `POWER_BUDGET_MA` (supply permitting) |
