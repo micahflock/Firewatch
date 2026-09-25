@@ -63,19 +63,19 @@ This keeps the number of separate purchases small. It assumes you already have a
 |---|---|---|---|---|
 | 1 | **QuinLED Dig-Uno v3, pre-assembled, with QuinLED-ESP32, onboard antenna** | 1 | [quinled.info](https://quinled.info/pre-assembled-quinled-dig-uno/) or a listed distributor | 27.50–37.50 + shipping |
 | 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 2.2 m (128 LEDs) | 5 m reel | 35 |
-| 3 | **Mean Well GST25A05-P1J** (5 V 4 A desktop supply, short-circuit protected) | 1 | Its barrel plug gets cut off, and the cord goes straight into the Dig-Uno | 15 |
-| 4 | 22 AWG 3-conductor LED wire | ~1.5 m | 5 m roll. It's used for every connection: strip start, strip end feed, and corner bridges. | 8 |
-| 5 | Heat-shrink tubing | a few pieces | Small assortment | 7 |
-| 6 | M4 × 12 mm pan-head screws | 4 | Small pack (VESA) | 6 |
-| 7 | M2 × 8 mm self-tapping pan-head screws | 8 | Pack. They hold the board (4) and the lid (4). | 7 |
-| 8 | 3M VHB tape, 12 mm (e.g. 5952) | ~0.5 m | Roll | 12 |
-| 9 | Cable ties (≤ 3.6 mm wide) | a few | Pack | 4 |
-| 10 | Printed parts: `firewatch_base.stl`, `firewatch_lid.stl`, 20 × `strip_clip_10mm.stl` | | PETG, about 90 g | — |
-| | **Total** | | | **≈ $125–135 + Dig-Uno shipping** |
+| 3 | **Mean Well GST25A05-P1J** (5 V 4 A desktop supply, 5.5 × 2.1 mm center-positive plug, short-circuit protected) | 1 | | 15 |
+| 4 | Female 5.5 × 2.1 mm DC barrel jack pigtail (pre-wired, ~15–20 cm leads) | 1 | Pack of 5–10. Its leads go into the Dig-Uno's power input, so the supply unplugs at the jack. | 7 |
+| 5 | 22 AWG 3-conductor LED wire | ~1.5 m | 5 m roll. It's used for every connection: strip start, strip end feed, and corner bridges. | 8 |
+| 6 | Heat-shrink tubing | a few pieces | Small assortment | 7 |
+| 7 | M4 × 12 mm pan-head screws | 4 | Small pack (VESA) | 6 |
+| 8 | M2 × 8 mm self-tapping pan-head screws | 8 | Pack. They hold the board (4) and the lid (4). | 7 |
+| 9 | 3M VHB tape, 12 mm (e.g. 5952) | ~0.5 m | Roll | 12 |
+| 10 | Cable ties (≤ 3.6 mm wide) | a few | Pack | 4 |
+| 11 | Printed parts: `firewatch_base.stl`, `firewatch_lid.stl`, 20 × `strip_clip_10mm.stl` | | PETG, about 90 g | — |
+| | **Total** | | | **≈ $130–140 + Dig-Uno shipping** |
 
 **What got cut, and why:**
 - **Wago connectors:** solder joints under heat-shrink do the same job.
-- **Barrel-jack adapter:** the supply cord goes straight into the Dig-Uno's input terminal.
 - **18 AWG wire:** at under 3 A over less than a metre, 22 AWG drops under 0.2 V.
 - **Washers:** the M4 pan heads are wider than the 4.5 mm slots.
 - **Adhesive cable clips:** leftover VHB holds the wire runs down.
@@ -92,7 +92,8 @@ This keeps the number of separate purchases small. It assumes you already have a
 ## Wiring
 
 ```
- GST25A05 cord (plug cut off) ─────────────► Dig-Uno power input  (+ / −)
+ GST25A05 ──plug──► female barrel pigtail ──► Dig-Uno power input  (+ / −)
+                    (cable-tied to the anchor beside the box)
 
  Dig-Uno LED output terminal
      5V   ─┬─ 22AWG ─────────────────────────►  strip START  +5V pad
@@ -107,7 +108,8 @@ This keeps the number of separate purchases small. It assumes you already have a
 ```
 
 Notes:
-- **Supply polarity.** After cutting off the barrel plug, check which lead is + with a multimeter (supply plugged in, leads apart) before landing them in the terminal.
+- **Supply polarity.** Pigtail lead colors aren't guaranteed. Plug the supply in, check which lead is + with a multimeter (leads apart), and unplug it again before landing them in the terminal.
+- **Strain relief.** Cable-tie the pigtail's jack to one of the power-side anchors, so unplugging the supply pulls on the anchor, not the screw terminal.
 - **Both strip feeds share the Dig-Uno's fused output.** Two 22 AWG wires go into each of the 5V and GND screws: twist each pair's strands together and don't tin them. Tinned wire in a screw terminal loosens over time. The loop starts and ends at the same corner, so both runs are short. QuinLED's own guidance for 5 V strips of this length is to feed both ends.
 - **Strip ends.** Cut the JST plug and loose power leads off both ends of the strip, and solder the 22 AWG runs directly to the copper pads. Check the arrows: data must enter at the **start**. Leave the end's DIN/DOUT pad unconnected. The strip end's feed only needs two of the cable's three conductors.
 - **Common ground** is automatic: everything shares the supply's GND at the Dig-Uno.
@@ -136,7 +138,7 @@ Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_moun
 
 | File | What | Print |
 |---|---|---|
-| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the supply cord **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
+| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
 | `strip_clip_10mm.stl` / `strip_clip_12mm.stl` | 45° clip that holds the strip facing outward and backward toward the firebox walls. The strip slides in from the end, and lips hold the PCB edges clear of the LEDs. | **Profile face down** (as exported). 20 needed. |
