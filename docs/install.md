@@ -73,7 +73,7 @@ What to set in [`config.h`](../firmware/include/config.h):
 | `ROKU_WIFI_MAC` | The TV's Wi-Fi MAC, for Wake-on-LAN before the firmware has read it from the TV (set to `D4:AB:CD:A8:96:96`) |
 | `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
-| `POWER_BUDGET_MA` | Supply current cap (3000 mA for the 4 A supply) |
+| `POWER_BUDGET_MA` | Supply current cap (2500 mA; right for a 3 A or 4 A supply) |
 | `DEFAULT_BRIGHTNESS` | Start value. After that, the web page's slider sets it, and it's saved across reboots. |
 | `FOLLOW_TV` | 1 = TV power drives the glow (recommended) |
 | `IR_LED_PIN` | The GPIO for the optional IR LED: 15 (the Dig-Uno's Q1), or −1 for none |

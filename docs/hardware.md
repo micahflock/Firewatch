@@ -36,7 +36,7 @@ The light doesn't need to be dotless or high-density. The strip faces the firebo
 
 ## Recommendation
 
-**QuinLED Dig-Uno v3 (pre-assembled, with QuinLED-ESP32) + SK6812 RGBW warm-white, 5 V, 60 LED/m, 10 mm, IP30 + Mean Well 5 V 4 A supply**, in a printed enclosure screwed to the TV's VESA holes. The wiring uses the Dig-Uno's screw terminals and a few soldered joints, so the only wire you buy is one roll of 22 AWG 3-conductor.
+**QuinLED Dig-Uno v3 (pre-assembled, with QuinLED-ESP32) + SK6812 RGBW warm-white, 5 V, 60 LED/m, 10 mm, IP30 + a 5 V 3–4 A supply**, in a printed enclosure screwed to the TV's VESA holes. The wiring uses the Dig-Uno's screw terminals and a few soldered joints, so the only wire you buy is one roll of 22 AWG 3-conductor.
 
 Why this combination:
 - **RGBW warm-white is the biggest quality lever.** Real firelight is broadband, and a phosphor white die gets much closer to it than any RGB mix. The fire palette ([`fire.cpp`](../firmware/lib/firecore/src/fire.cpp)) uses W for the glow's body and RGB for the red and orange movement.
@@ -63,7 +63,7 @@ This keeps the number of separate purchases small. It assumes you already have a
 |---|---|---|---|---|
 | 1 | **QuinLED Dig-Uno v3, pre-assembled, with QuinLED-ESP32, onboard antenna** | 1 | [quinled.info](https://quinled.info/pre-assembled-quinled-dig-uno/) or a listed distributor | 27.50–37.50 + shipping |
 | 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 1.5 m (87 LEDs) | 2 m reel, leaving spare LEDs for mistakes | 20 |
-| 3 | **Mean Well GST25A05-P1J** (5 V 4 A desktop supply, 5.5 × 2.1 mm center-positive plug, short-circuit protected) | 1 | | 15 |
+| 3 | **5 V DC supply, 3–4 A, 5.5 × 2.1 mm center-positive plug**: Mean Well GST25A05-P1J (4 A, the most proven for 24/7 use) or BTF-LIGHTING 5 V 3 A adapter | 1 | Check the unit carries a UL/ETL mark. Some BTF adapters include a female barrel-to-screw-terminal adapter, which replaces item 4. | 13–15 |
 | 4 | Female 5.5 × 2.1 mm DC barrel jack pigtail (pre-wired, ~15–20 cm leads) | 1 | Pack of 5–10. Its leads go into the Dig-Uno's power input, so the supply unplugs at the jack. | 7 |
 | 5 | 22 AWG 3-conductor LED wire | ~1 m | 5 m roll. It's used for every connection: the run to the strip start and the two corner bridges. | 8 |
 | 6 | Heat-shrink tubing | a few pieces | Small assortment | 7 |
@@ -122,12 +122,12 @@ Notes:
 | | Current (5 V) |
 |---|---|
 | Theoretical max: 87 LEDs × 4 channels × ~15 mA | 5.2 A (never reached) |
-| Firmware cap (`POWER_BUDGET_MA`), including the ESP32 | 3.0 A |
+| Firmware cap (`POWER_BUDGET_MA`), including the ESP32 | 2.5 A |
 | Fire at 60% brightness (default), firmware estimate over 100 s, all-in | avg 1.0 A, peak 1.1 A |
 | Fire at 100% brightness | avg 1.4 A, peak 1.6 A |
 | Off (ESP32 on Wi-Fi + strip idle) | ≈ 0.2 A (≈ 1.1 W) |
 
-The web page shows the firmware's live current estimate (`ledCurrentMa`). The Dig-Uno's 10 A fuse and 15 A rating leave plenty of margin, and the 4 A supply has more than 2 A to spare even at full brightness.
+The web page shows the firmware's live current estimate (`ledCurrentMa`). The Dig-Uno's 10 A fuse and 15 A rating leave plenty of margin, and a 3 A supply still has about 1.4 A to spare even at full brightness.
 
 ## Mounting
 

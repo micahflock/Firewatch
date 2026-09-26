@@ -20,8 +20,9 @@ static const fw::Segment kLedLayout[] = {
     {1, 1, 1, 0, 23},  // right side, top -> bottom
 };
 
-// Power budget for the whole 5 V rail (PSU is 4 A; keep headroom).
-#define POWER_BUDGET_MA 3000
+// Power budget for the whole 5 V rail. 2.5 A leaves headroom on a 3 A supply; the fire
+// peaks around 1.6 A at full brightness, so this cap is a safety net, not a limiter.
+#define POWER_BUDGET_MA 2500
 #define MA_PER_CHANNEL 15  // measured-ish for 5050 SK6812/WS2812B at full duty
 
 // Default master brightness (0-100). Adjustable at runtime from the web page.
