@@ -96,10 +96,11 @@ This keeps the number of separate purchases small. It assumes you already have a
                     (cable-tied to the anchor beside the box)
 
  Dig-Uno LED output terminal
-     5V   ─── 22AWG ─────────────────────────►  strip START  +5V pad
-     LED1 ─── 22AWG (GPIO16, level-shifted) ─►  strip START  DIN pad
+     5V   ─── 22AWG ──┐                  ┌──►  strip START  +5V pad
+     LED1 ─── 22AWG ──┼─ JST-SM 3-pin ───┼──►  strip START  DIN pad
+                      │ (unplug here)    │     (GPIO16, level-shifted)
      LED2     (unused)
-     GND  ─── 22AWG ─────────────────────────►  strip START  GND pad
+     GND  ─── 22AWG ──┘                  └──►  strip START  GND pad
 
  Strip START = bottom of the left side (front view); strip END = bottom of the right side.
 
@@ -111,7 +112,7 @@ Notes:
 - **Supply polarity.** Pigtail lead colors aren't guaranteed. Plug the supply in, check which lead is + with a multimeter (leads apart), and unplug it again before landing them in the terminal.
 - **Strain relief.** Cable-tie the pigtail's jack to one of the power-side anchors, so unplugging the supply pulls on the anchor, not the screw terminal.
 - **One feed is enough.** QuinLED's guidance is that a 5 V strip of up to about 90 LEDs can be fed from one end, and this one is 87, drawing about 1–1.6 A. The far end is at the opposite bottom corner, so skipping a second feed also saves a wire across the TV. Don't tin the wire ends that go into the screw terminals; tinned wire loosens over time.
-- **Strip ends.** Cut the JST plug and loose power leads off the strip, and solder the 22 AWG run directly to the start's copper pads. Check the arrows: data must enter at the **start**. Cover the far end's bare pads with heat-shrink.
+- **Strip connector.** BTF reels come with a JST-SM 3-pin plug on each end, and the two plugs mate. Keep the plug on the strip's **start** end (data arrows pointing away from it). Cut the other plug off the reel's far end with its pigtail, extend its three wires with the 22 AWG run (solder + heat-shrink), and land them in the Dig-Uno's LED output. The strip then unplugs from the controller at the connector. Match wires by what they connect to, not by color: follow each pigtail wire to the `+5V`, `Din` and `GND` pads, or check with a multimeter. Trim or heat-shrink any loose extra power leads, and cover the far end's bare pads.
 - **Common ground** is automatic: everything shares the supply's GND at the Dig-Uno.
 - **Don't cut strip power when "off".** An unpowered strip gets back-powered through its data line. Idle draw is about 1 mA per LED (≈0.6 W) plus about 0.5 W for the ESP32.
 - **Flash over USB-C with the supply unplugged.** After the first flash, updates go over Wi-Fi.
