@@ -58,6 +58,12 @@ pio device monitor                                # logs: [wifi] ... [roku] ...
 
 For the first USB flash, **unplug the 5 V supply** (USB powers the board by itself). Later updates go over Wi-Fi with `pio run -e esp32-ota -t upload`, so the board can stay in its enclosure.
 
+**The OTA password** (`OTA_PASSWORD` in `secrets.h`) is a password you make up. It's written into the board at the first USB flash, and every later Wi-Fi update must supply the same one, so nobody else on your network can reflash the board. The uploader reads it from an environment variable, so it never goes into a file that's committed. Set it once in PowerShell, then restart VS Code:
+
+```powershell
+setx FIREWATCH_OTA_PASSWORD "the-same-password-as-in-secrets.h"
+```
+
 What to set in [`config.h`](../firmware/include/config.h):
 
 | Setting | What |
