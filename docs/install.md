@@ -64,6 +64,8 @@ For the first USB flash, **unplug the 5 V supply** (USB powers the board by itse
 setx FIREWATCH_OTA_PASSWORD "the-same-password-as-in-secrets.h"
 ```
 
+**Updating from a build without Apple Home:** flash once over USB (`pio run -e esp32 -t upload`), because the partition table changed to `min_spiffs` to make room. Your brightness setting is kept; later updates can go over Wi-Fi again.
+
 What to set in [`config.h`](../firmware/include/config.h):
 
 | Setting | What |
@@ -78,6 +80,11 @@ What to set in [`config.h`](../firmware/include/config.h):
 | `FOLLOW_TV` | 1 = TV power drives the glow (recommended) |
 | `IR_LED_PIN` | The GPIO for the optional IR LED: 15 (the Dig-Uno's Q1), or −1 for none |
 | `LED_PIN`, `BUTTON_PIN` | Already match the Dig-Uno (LED1 = GPIO16, button = GPIO0) |
+| `HOMEKIT_PORT` | Apple Home's port (1201). The web page stays on 80. |
+| `LIGHTER_ENABLED` | 1 = listen for the Skeumo fireplace lighter over Bluetooth; 0 = Bluetooth off |
+| `LIGHTER_DIRECT` | 1 = a strike/snuff turns the fire on/off directly; 0 = only relay the buttons to Apple Home |
+
+And in `secrets.h`: `HOMEKIT_SETUP_CODE` (optional, 8 digits) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
 
 To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/firecore/src/fire.h): flicker bands, rise speed, flare rate, and so on. [`tools/preview`](../tools/preview) renders the result to a GIF on your computer without any hardware.
 
@@ -91,10 +98,18 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 6. Stick on the clips and fit the strip. Hold the wire runs down with scraps of VHB.
 7. Open `http://firewatch.local` and press **Light the fire**. Check that the steady part of the glow is low on the sides and the lively flicker is across the top. If it's the other way round, the layout direction is reversed. Then fasten the lid with four M2 × 8 screws.
 
-## 6. Daily use
+## 6. Apple Home
+
+In the Home app: **+ → Add Accessory → More options… → Firewatch**. The setup code is **466-37-726** unless you set `HOMEKIT_SETUP_CODE`. Accept the "uncertified accessory" warning and place the **Fireplace** (and **Lighter**, if enabled) in the room. The serial log (`pio device monitor`) prints the pairing status. HomeSpan's serial commands also work there: type `?` for the list, and `S 12345678` changes the setup code.
+
+Try it: "Hey Siri, turn on the fireplace". Then add an automation: **When Fireplace turns on → set the living room lights**, and one for **turns off**.
+
+## 7. Daily use
 
 - **On:** press power on the Roku remote. The glow swells in, and within a few seconds the Roku goes from Home to the fire video. You can also use `http://firewatch.local/on` (bookmark it or add it to a phone shortcut) or the Dig-Uno's button.
 - **Off:** press power on the remote (the glow fades out), or use `/off`, which also turns the TV off.
+- **Apple Home:** the **Fireplace** switch, Siri, or any scene that includes it. It also turns on and off by itself when you use the remote.
+- **Lighter:** open the lid and roll the wheel to light the fire; close the lid to put it out.
 - **Video stuck or paused:** press **Restart video** on the web page, or use `/relaunch`.
 
 Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightness?value=0-100`, `/status` (JSON).
@@ -110,4 +125,6 @@ Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightnes
 | Fire video doesn't start | Try the `curl` launch from step 2; if that fails too, the video may be region-locked or removed, so pick another and update `FIRE_CONTENT_ID` |
 | First LEDs flicker or show wrong colors | Data wired to LED2 instead of LED1, the LED1 jumper not on GPIO16, a cracked solder joint, or data entering the wrong end of the strip (check the arrows) |
 | Colors look green-tinged | `LED_RGBW` doesn't match the strip, or it's a GRBW vs RGBW variant (change `NeoGrbwFeature` in `leds.cpp`) |
+| Firewatch not in Home's "Add Accessory" list | Phone on the same network; the ESP32 needs 2.4 GHz (step 1.6). If it was paired before and removed from Home, type `U` in the serial monitor to unpair, then add it again. |
+| Lighter does nothing | `/status` → `lighter.link` must be `ok` (key in `secrets.h`). `rejected` counting up means the two keys differ. `lastSeenS` staying null: out of range, or the lighter isn't sending (check its serial log). |
 | Glow too dim on sooty brick | Raise the brightness slider; if the current estimate hits the cap, raise `POWER_BUDGET_MA` (supply permitting) |

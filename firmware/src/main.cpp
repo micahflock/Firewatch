@@ -1,8 +1,9 @@
 // Firewatch: fire-glow LEDs around a Roku TV, started and stopped together with the TV.
 //
 // Core 1 (Arduino loop): fire animation -> dithering -> LEDs at TARGET_FPS, plus button/OTA.
-// Core 0: "net" task polls the TV and runs the Scene state machine; "web" task serves HTTP.
-// The only state crossing cores is a command queue, two atomics and a mutex-guarded status.
+// Core 0: "net" task polls the TV and runs the Scene state machine; "web" task serves HTTP;
+// HomeSpan's task serves Apple Home. The BLE host task delivers lighter frames.
+// The only state crossing tasks is a command queue, a few atomics and mutex-guarded status.
 
 #include <Arduino.h>
 #include <ArduinoOTA.h>
@@ -18,8 +19,10 @@
 
 #include "config.h"
 #include "fire.h"
+#include "homekit.h"
 #include "ir.h"
 #include "leds.h"
+#include "lighter_rx.h"
 #include "output.h"
 #include "roku_client.h"
 #include "scene.h"
@@ -30,6 +33,12 @@
 #else
 #warning "include/secrets.h missing - copy secrets.example.h and fill in your Wi-Fi details"
 #include "secrets.example.h"
+#endif
+#ifndef HOMEKIT_SETUP_CODE
+#define HOMEKIT_SETUP_CODE ""
+#endif
+#ifndef SKEUMO_LINK_KEY
+#define SKEUMO_LINK_KEY ""
 #endif
 
 namespace {
@@ -90,15 +99,17 @@ void netTask(void*) {
     uint32_t elapsed = millis() - lastPoll;
     TickType_t wait = pdMS_TO_TICKS(elapsed >= interval ? 0 : interval - elapsed);
     if (xQueueReceive(commandQueue, &c, wait) == pdTRUE) {
-      execute(scene.command(c, millis()));
-      lightsOn = scene.lightsOn();
+      fw::Actions a = scene.command(c, millis());
+      lightsOn = scene.lightsOn();  // before the ECP calls, so the glow never waits on the TV
+      execute(a);
     }
     if (WiFi.status() == WL_CONNECTED && millis() - lastPoll >= interval) {
       lastPoll = millis();
       fw::TvStatus s = roku.poll();
       lastPower = s.power;
-      execute(scene.observe(s, millis()));
+      fw::Actions a = scene.observe(s, millis());
       lightsOn = scene.lightsOn();
+      execute(a);
     }
 
     std::lock_guard<std::mutex> lock(statusMutex);
@@ -112,9 +123,22 @@ void netTask(void*) {
   }
 }
 
+// ---- Apple Home + lighter ----------------------------------------------------------------
+bool lighterLinkOk = false;
+
+void queueCommand(fw::Command c) { xQueueSend(commandQueue, &c, 0); }
+
+void onLighter(const skeumo::link::Message& m) {
+#if LIGHTER_DIRECT
+  if (m.channel == LIGHTER_STRIKE_CHANNEL) queueCommand(fw::Command::On);
+  if (m.channel == LIGHTER_SNUFF_CHANNEL) queueCommand(fw::Command::Off);
+#endif
+  homekit::lighterEvent(m);
+}
+
 // ---- web task ------------------------------------------------------------------------
 void sendCommand(fw::Command c) {
-  xQueueSend(commandQueue, &c, 0);
+  queueCommand(c);
   server.send(200, "application/json", "{\"ok\":true}");
 }
 
@@ -142,6 +166,20 @@ void handleStatus() {
   j += "\"brightness\":" + String(brightnessPct.load()) + ",";
   j += "\"ledCurrentMa\":" + String(static_cast<int>(currentMa.load())) + ",";
   j += "\"videoConfigured\":" + String(sizeof(FIRE_CONTENT_ID) > 1 ? "true" : "false") + ",";
+#if LIGHTER_ENABLED
+  {
+    lighter_rx::Stats l = lighter_rx::stats();
+    j += "\"lighter\":{";
+    j += "\"link\":\"" + String(lighterLinkOk ? "ok" : "no valid SKEUMO_LINK_KEY") + "\",";
+    j += "\"lastSeenS\":" + (l.lastSeenMs ? String((millis() - l.lastSeenMs) / 1000) : String("null")) + ",";
+    j += "\"lastChannel\":" + String(l.lastChannel) + ",";
+    j += "\"battery\":" + (l.batteryPct <= 100 ? String(l.batteryPct) : String("null")) + ",";
+    j += "\"rssi\":" + String(l.rssi) + ",";
+    j += "\"counter\":" + String(l.counter) + ",";
+    j += "\"rejected\":" + String(l.rejected) + "},";
+  }
+#endif
+  j += "\"freeHeap\":" + String(ESP.getFreeHeap()) + ",";
   j += "\"uptimeS\":" + String(millis() / 1000) + ",";
   j += "\"rssi\":" + String(WiFi.RSSI()) + "}";
   server.send(200, "application/json", j);
@@ -155,6 +193,13 @@ void webTask(void*) {
   server.on("/off", [] { sendCommand(fw::Command::Off); });
   server.on("/toggle", [] { sendCommand(fw::Command::Toggle); });
   server.on("/relaunch", [] { sendCommand(fw::Command::Relaunch); });
+#if LIGHTER_ENABLED
+  // After erasing and re-flashing the lighter its counter restarts; accept it again.
+  server.on("/lighter/reset", [] {
+    lighter_rx::resetCounter();
+    server.send(200, "application/json", "{\"ok\":true}");
+  });
+#endif
   server.on("/brightness", [] {
     if (server.hasArg("value")) {
       int v = constrain(server.arg("value").toInt(), 0, 100);
@@ -191,8 +236,7 @@ void pollButton() {
   } else if (r != stable && millis() - changedAt > 30) {
     stable = r;
     if (!stable) {
-      fw::Command c = fw::Command::Toggle;
-      xQueueSend(commandQueue, &c, 0);
+      queueCommand(fw::Command::Toggle);
     }
   }
 #endif
@@ -238,6 +282,21 @@ void setup() {
   commandQueue = xQueueCreate(8, sizeof(fw::Command));
   xTaskCreatePinnedToCore(netTask, "net", 8192, nullptr, 1, nullptr, 0);
   xTaskCreatePinnedToCore(webTask, "web", 6144, nullptr, 1, nullptr, 0);
+
+  homekit::Hooks hooks;
+  hooks.setFire = [](bool on) { queueCommand(on ? fw::Command::On : fw::Command::Off); };
+  hooks.fireOn = [] { return lightsOn.load(); };
+  homekit::begin(hooks, WIFI_SSID, WIFI_PASSWORD, HOMEKIT_SETUP_CODE);
+
+#if LIGHTER_ENABLED
+  skeumo::link::Key key;
+  lighterLinkOk = skeumo::link::parseKey(SKEUMO_LINK_KEY, key);
+  if (lighterLinkOk) {
+    lighter_rx::begin(key, LIGHTER_DEVICE_ID, onLighter);
+  } else {
+    Serial.println("[lighter] SKEUMO_LINK_KEY missing or malformed in secrets.h; not listening");
+  }
+#endif
   lastFrameUs = esp_timer_get_time();
 }
 
