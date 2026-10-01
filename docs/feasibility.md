@@ -67,7 +67,7 @@ ECP is Roku's official LAN API: plain HTTP on port 8060 ([Roku docs](https://dev
 
 - TCL Roku TVs accept NEC IR codes with **discrete** power commands: `0x57E316E9` = on, `0x57E318E7` = off (the 32-bit form used by IRremoteESP8266). These are community-sourced ([code list](https://gist.github.com/DDRBoxman/c68b68e41a47338496ba8cbd1bb5d20e)). Discrete codes are safe to repeat, unlike a power toggle.
 - IR can't deep-link to a video. The firmware runs a **hybrid**: IR wakes the TV, the TV joins Wi-Fi within about 10–20 s, and then ECP launches the fire as usual. With `IR_LED_PIN` set, the IR power-on is sent alongside every ECP wake.
-- Hardware: an IR LED, one NPN transistor, and two resistors (about $2), with the LED on a thin lead aimed at the IR receiver window on the TV's front bottom edge. See [hardware.md](hardware.md#optional-ir-blaster).
+- Hardware: an IR LED, one NPN transistor, and two resistors (about $2), plugged onto the Dig-Uno's Q1 header (GPIO15), with the LED on a thin lead aimed at the IR receiver window on the TV's front bottom edge. See [hardware.md](hardware.md#shopping-list-from-scratch).
 - Following the TV's power still works without fast start: the TV is unreachable in standby and reachable once it's on, and the firmware treats three missed polls in a row as "off".
 
 ## 4. Following the TV's power (the actual single action)
@@ -86,7 +86,68 @@ ESP32 reboots under a running fire ─► glow resumes, video left alone
 
 If the TV never wakes, the glow stays on by itself. The status page shows `TV did not wake; lights only`, and if you then turn the TV on with the remote it joins the scene.
 
+## 5. Matching the glow to your fireplace video
+
+The video is [youtu.be/CF00JqnCcsU](https://youtu.be/CF00JqnCcsU), "Escape to a Cozy Winter Wonderland: 6 Hours of Fireplace Sounds": 6 h at 1080p60, a close-up log fire in a brick firebox. YouTube blocks full video downloads from servers, so it was measured from its public **storyboard** images: the 160 × 90 scrub-bar previews YouTube publishes every ~10 s across the whole video, 2,163 frames in all ([`tools/video_match/storyboard.py`](../tools/video_match/storyboard.py)).
+
+**What the video is:** mostly a **~39.3-minute clip on repeat**. Frames 2,358 s apart are near-identical 72% of the time, and some sections are spliced in differently. So it's about nine passes of one clip, not six unique hours.
+
+### Level 1: statistical match (done)
+
+This makes the glow *behave* like the video's light without knowing which frame is on screen. The LEDs run up the left side, across the top and down the right side, with none along the bottom. So the video is measured over the same U shape: its left, right and top thirds. The lower third of each side ("low") serves as the steady reference, and everything is in linear light, sampled at independent moments ([`stats.py`](../tools/video_match/stats.py)). [`fit_params.py`](../tools/video_match/fit_params.py) then searches the engine's parameters to match. To make that possible, the engine gained one new idea: flicker strength now grows with height (`flickerBottom` / `flickerTop`).
+
+| Measure | Video (U-shaped edge region) | Engine now |
+|---|---|---|
+| Total light variation (CV) | 0.140 | 0.152 |
+| Lower-sides variation | 0.050 | 0.053 |
+| Top variation | 0.302 | 0.255 |
+| Left / right variation | 0.149 / 0.144 | 0.124 / 0.142 |
+| Top ÷ lower-sides brightness | 1.06 | 1.04 |
+| Left / right ÷ lower-sides brightness | 0.83 / 1.01 | 0.98 / 0.99 |
+| Left–right correlation | 0.25 | 0.12 |
+| Top–lower-sides correlation | 0.06 | 0.07 |
+| Light color, G/R · B/R | 0.66 · 0.33 | 0.51 · 0.17 |
+
+What that means for the glow:
+- **The brightness is even around the U.** The video's edges are about as bright at the top as at the lower corners.
+- **The lower part of each side, lit by the ember bed, is nearly steady (±5%), and the flame tips at the top do the flickering (±30%).** The previous engine flickered the whole strip uniformly.
+- **The sides flicker independently of each other,** as flames do on the left and right of a real fire.
+- **Flares are small,** because big ones would add variation this video doesn't have.
+- **The color moved from red-orange to amber.** It stops short of the video's own average (0.66 · 0.33), because the camera clips the flames to near-white. Matched exactly, the LEDs look peach. The palette gets hue from red plus green and uses warm-white as support.
+- **The video is slightly brighter on the right (by about 20%),** where its flames lean. The engine is symmetric, so it doesn't reproduce this.
+
+**Limits:**
+- **Flicker speed isn't measured.** Ten-second samples can't show how fast the fire flickers, so the three flicker rates are still general fire-physics defaults. A 2–3 minute phone recording of the TV playing the video would measure them.
+- **Colors are approximate.** They come from compressed 160 × 90 JPEGs, and the conversion from LED duty cycle to screen color is approximate. Tune the final color by eye on the real strip.
+
+### Level 2: synced pre-rendered track: feasible for slow swells (about ±100 ms), not for fast flicker
+
+The idea: analyze the video frame by frame offline, store a per-zone light track on the ESP32, and play it in step with the TV.
+
+| Question | Assessment |
+|---|---|
+| Storage | **Not a constraint.** The 39.3-min clip at 15 fps × 4 zones × 1 byte ≈ 140 KB. The whole 6 h ≈ 1.3 MB. Both fit in the ESP32's 4 MB flash next to the firmware. |
+| Getting frames to analyze | **Awkward.** It needs the video at ≥ 15 fps. Downloading it with yt-dlp on your own machine works, but YouTube's Terms of Service don't permit it. Recording the TV with a phone is clean but has to be aligned by hand. The spliced sections mean mapping the whole 6 h, not one loop. |
+| Knowing where playback is | **Available (confirmed on your TV).** ECP `query/media-player` returns `<player state="play">`, `<plugin id="837" name="YouTube">` and `<position>2403952 ms</position>`, but no `<duration>`. The launch landed 40 minutes into the video: YouTube resumes where you last left off rather than starting at 0, so the track has to follow the reported position, not the launch time. Ads (without Premium) still need detecting, e.g. by the position jumping. |
+| Achievable accuracy | **Measured on your TV:** the reported position advances in steps of about 0.5 s (500–517 ms, with one 686 + 335 ms pair), and tracks real time at 1.00×. Read naively, that means ±0.5 s. But each step is a fresh snapshot of the true position, so the firmware can poll every 100–200 ms, anchor its own clock to the moment each step appears, and keep the freshest anchor. That brings the error down to about **±100 ms** (poll interval plus network jitter). |
+| Payoff | **Small.** For the wall to visibly "answer" a flame, the timing error has to be under ~100 ms. At ±100–250 ms the 3–8 Hz flicker lands out of phase, and only slow swells (≥ 1 s) would visibly line up. This video's fire is steady, with few big swells. The screen itself already throws perfectly synced light into the firebox. |
+
+**Position-granularity test** (Windows PowerShell, run while the video plays; this is how the numbers above were measured):
+
+```powershell
+1..20 | % { $t = Get-Date -Format "HH:mm:ss.fff"; $p = ([xml](Invoke-WebRequest -UseBasicParsing http://192.168.1.176:8060/query/media-player).Content).player.position; "$t  $p"; Start-Sleep -Milliseconds 250 }
+```
+
+**Recommendation:** the position feed is good enough for a **slow-envelope sync**. The glow's overall brightness would follow a pre-computed track of the video's 0.2–2 Hz swells and flares at about ±100 ms, and the fast flicker would stay procedural. Full frame-level sync isn't worth it: 3–8 Hz flicker needs better than ±30 ms to line up visibly.
+
+What building it would take:
+
+1. **A brightness track of the video.** Record one full pass of the 39.3-min clip off the TV with a phone, then align it to the video's timeline by matching against the storyboard frames. Each storyboard frame is an exact video frame at a known time, so the match lands within one frame. The storyboards also map which stretches of the 6 h are repeats of that clip. Spliced sections that don't match get no track and fall back to the procedural fire.
+2. **Firmware changes.** Poll `query/media-player` every ~150 ms while the fire is playing, estimate the offset between the TV's position and the ESP32's clock, and scale the procedural fire's brightness by the track. Fall back whenever the position is missing, paused, or jumps (ads, seeking).
+
+That's roughly a day of tooling and firmware, plus one 40-minute phone recording. The payoff: the glow swells when the on-screen fire swells. That's noticeable but subtle, because this video's fire is steady (edge-light variation ±14%). The statistical match already covers the rest.
+
 ## What was verified vs. what needs your TV
 
 - **Verified here:** the firmware compiles for ESP32 (RGBW, RGB, and IR builds). 25 host unit tests pass, covering the scene policy, ECP response parsing, dithering accuracy, the power limiter, and fire-field behavior. The mounting STLs are watertight meshes exported from the parametric source. The fire animation was rendered offline ([preview](img/preview.gif)).
-- **Needs your hardware:** the power-restore test above, whether your Roku OS build defaults to *Limited* mode, how long the TV takes to wake, and color and brightness tuning against your actual firebox. Sooty brick reflects much less than paint, so expect to raise brightness. [install.md](install.md) has a 5-minute `curl` checklist that proves the ECP path before you solder anything.
+- **Needs your hardware:** the power-restore test above, whether your Roku OS build defaults to *Limited* mode, how long the TV takes to wake, and color and brightness tuning against your actual firebox, and whether the optional slow-envelope sync is worth building ([section 5](#5-matching-the-glow-to-your-fireplace-video)). YouTube's position reporting is already confirmed and measured on your TV. Sooty brick reflects much less than paint, so expect to raise brightness. [install.md](install.md) has a 5-minute `curl` checklist that proves the ECP path before you solder anything.

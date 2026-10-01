@@ -41,16 +41,18 @@ struct Stop {
   float heat;
   Rgbw c;
 };
-// Linear-light values (LED PWM duty), not sRGB: green is far more luminous than red on
-// a 5050 LED, so a convincing orange needs much less green than an sRGB orange suggests.
+// Linear-light values (LED PWM duty), not sRGB. Hues follow the fireplace video's
+// measured flame colors (tools/video_match), but mid and bright tones are built from red
+// + green with warm white as support: the white die carries blue, and leaning on it turns
+// the glow peach rather than amber.
 const Stop kPalette[] = {
     {0.00f, {0.000f, 0.000f, 0.000f, 0.000f}},
-    {0.20f, {0.100f, 0.004f, 0.000f, 0.000f}},  // deep ember red
-    {0.45f, {0.400f, 0.035f, 0.000f, 0.000f}},  // red
-    {0.70f, {0.750f, 0.120f, 0.000f, 0.060f}},  // red-orange
-    {0.90f, {0.950f, 0.240f, 0.000f, 0.200f}},  // orange
-    {1.10f, {1.000f, 0.360f, 0.010f, 0.450f}},  // amber
-    {1.40f, {1.000f, 0.450f, 0.030f, 0.800f}},  // flare: warm yellow-white
+    {0.20f, {0.092f, 0.011f, 0.000f, 0.008f}},  // deep ember
+    {0.45f, {0.290f, 0.045f, 0.000f, 0.050f}},  // ember red-orange
+    {0.70f, {0.450f, 0.120f, 0.000f, 0.150f}},  // orange
+    {0.90f, {0.400f, 0.160f, 0.000f, 0.300f}},  // amber
+    {1.10f, {0.350f, 0.200f, 0.000f, 0.500f}},  // yellow flame
+    {1.40f, {0.300f, 0.220f, 0.000f, 0.850f}},  // flare: bright warm yellow-white
 };
 constexpr int kStops = sizeof(kPalette) / sizeof(kPalette[0]);
 
@@ -113,10 +115,10 @@ void FireEngine::render(double t, Rgbw* out) {
   const FireParams& p = params;
   updateFlares(t);
 
-  float global = 1.0f + p.flickerSlow * noise3(wrap256(t * p.rateSlow), 0.5f, 0.5f) +
+  float global = p.flickerSlow * noise3(wrap256(t * p.rateSlow), 0.5f, 0.5f) +
                  p.flickerMid * noise3(wrap256(t * p.rateMid), 10.5f, 0.5f) +
-                 p.flickerFast * noise3(wrap256(t * p.rateFast), 20.5f, 0.5f) +
-                 p.breathAmount * noise3(wrap256(t * p.breathRate), 30.5f, 0.5f);
+                 p.flickerFast * noise3(wrap256(t * p.rateFast), 20.5f, 0.5f);
+  float breath = 1.0f + p.breathAmount * noise3(wrap256(t * p.breathRate), 30.5f, 0.5f);
 
   float rise = wrap256(t * p.riseSpeed);
   float evolve = wrap256(t * p.evolveSpeed);
@@ -133,12 +135,13 @@ void FireEngine::render(double t, Rgbw* out) {
     float x = layout_[i].x, y = layout_[i].y;
     float cx = 2 * x - 1;
     float base = p.heatBottom + (p.heatTop - p.heatBottom) * y - p.centerBias * cx * cx;
+    float amp = p.flickerBottom + (p.flickerTop - p.flickerBottom) * y;
     float local = noise3(x * p.scaleX, y * p.scaleY - rise, evolve);
-    float heat = base * (1.0f + p.localAmount * local) * global;
+    float heat = base * breath * (1.0f + amp * (global + p.localAmount * local));
     for (int f = 0; f < 3; ++f) {
       if (flareEnv[f] <= 0) continue;
       float d = (x - flares_[f].x0) / 0.25f;
-      heat += flareEnv[f] * std::exp(-d * d) * (1.0f - 0.4f * y);
+      heat += amp * flareEnv[f] * std::exp(-d * d);
     }
     out[i] = heatToColor(heat);
   }

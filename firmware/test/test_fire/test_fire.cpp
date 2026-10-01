@@ -10,17 +10,19 @@ using namespace fw;
 void setUp() {}
 void tearDown() {}
 
-static std::vector<LedPos> loop128() {
-  const Segment segs[] = {{0, 0, 0, 1, 23}, {0, 1, 1, 1, 41}, {1, 1, 1, 0, 23}, {1, 0, 0, 0, 41}};
-  return buildLayout(segs, 4);
+// The shipped layout: left side up, across the top, right side down; no bottom edge.
+static std::vector<LedPos> sides87() {
+  const Segment segs[] = {{0, 0, 0, 1, 23}, {0, 1, 1, 1, 41}, {1, 1, 1, 0, 23}};
+  return buildLayout(segs, 3);
 }
 
 void test_layout_positions() {
-  auto l = loop128();
-  TEST_ASSERT_EQUAL(128, l.size());
+  auto l = sides87();
+  TEST_ASSERT_EQUAL(87, l.size());
   TEST_ASSERT_FLOAT_WITHIN(1e-4, 0.0f, l[0].x);
   TEST_ASSERT_FLOAT_WITHIN(1e-4, 0.5f / 23, l[0].y);
   TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[23].y);
+  TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[86].x);
 }
 
 void test_noise_is_bounded_and_periodic() {
@@ -42,28 +44,43 @@ void test_palette_monotonic_brightness() {
   }
 }
 
-void test_fire_is_bottom_heavy_and_alive() {
-  FireEngine fire(loop128(), 1234);
+static float lum(const Rgbw& c) { return 0.21f * c.r + 0.72f * c.g + 0.76f * c.w; }
+
+static double cv(const std::vector<double>& v) {
+  double m = 0, s = 0;
+  for (double x : v) m += x;
+  m /= v.size();
+  for (double x : v) s += (x - m) * (x - m);
+  return std::sqrt(s / v.size()) / m;
+}
+
+void test_fire_is_steady_low_and_lively_on_top() {
+  auto layout = sides87();
+  FireEngine fire(layout, 1234);
   std::vector<Rgbw> px(fire.size());
-  double top = 0, bottom = 0, change = 0;
+  double change = 0;
+  std::vector<double> top, low;
   std::vector<float> last(fire.size(), 0);
   for (int f = 0; f < 3000; ++f) {
     fire.render(f / 100.0, px.data());
+    double t = 0, b = 0;
     for (size_t i = 0; i < px.size(); ++i) {
-      float r = px[i].r;
-      if (i >= 23 && i < 64) top += r;
-      if (i >= 87) bottom += r;
-      if (f) change += std::fabs(r - last[i]);
-      last[i] = r;
+      float l = lum(px[i]);
+      if (layout[i].y > 0.99f) t += l;
+      if (layout[i].y < 0.33f) b += l;
+      if (f) change += std::fabs(l - last[i]);
+      last[i] = l;
     }
+    top.push_back(t);
+    low.push_back(b);
   }
-  TEST_ASSERT_TRUE(bottom > top * 1.2);
-  TEST_ASSERT_TRUE(change / (3000.0 * 128) > 0.002);  // flickers
-  TEST_ASSERT_TRUE(change / (3000.0 * 128) < 0.05);   // but not strobing at 100 fps
+  TEST_ASSERT_TRUE(cv(top) > 2.0 * cv(low));  // steady low on the sides, lively flame tips
+  TEST_ASSERT_TRUE(change / (3000.0 * 87) > 0.001);  // flickers
+  TEST_ASSERT_TRUE(change / (3000.0 * 87) < 0.05);   // but not strobing at 100 fps
 }
 
 void test_fire_survives_long_uptime() {
-  FireEngine fire(loop128(), 99);
+  FireEngine fire(sides87(), 99);
   std::vector<Rgbw> px(fire.size());
   double t0 = 45.0 * 24 * 3600;  // 45 days
   for (int f = 0; f < 500; ++f) {
@@ -132,7 +149,7 @@ int main() {
   RUN_TEST(test_layout_positions);
   RUN_TEST(test_noise_is_bounded_and_periodic);
   RUN_TEST(test_palette_monotonic_brightness);
-  RUN_TEST(test_fire_is_bottom_heavy_and_alive);
+  RUN_TEST(test_fire_is_steady_low_and_lively_on_top);
   RUN_TEST(test_fire_survives_long_uptime);
   RUN_TEST(test_dither_average_matches_intent);
   RUN_TEST(test_power_limit);

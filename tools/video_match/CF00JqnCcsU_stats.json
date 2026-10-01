@@ -1,0 +1,50 @@
+{
+ "video_id": "CF00JqnCcsU",
+ "title": "Escape to a Cozy Winter Wonderland: 6 Hours of Fireplace Sounds",
+ "duration_s": 21611,
+ "sample_interval_s": 9.991215903837263,
+ "source": "storyboard",
+ "stats": {
+  "total_cv": 0.14042073529054924,
+  "total_p95_over_p5": 1.5843175976665222,
+  "left_cv": 0.1490503932029377,
+  "right_cv": 0.14380395187201447,
+  "top_cv": 0.30229232014145874,
+  "low_cv": 0.05004266926949566,
+  "left_over_low": 0.8282154496280533,
+  "right_over_low": 1.0105470094956113,
+  "top_over_low": 1.05852028731474,
+  "corr_left_right": 0.24611575638738659,
+  "corr_top_low": 0.06154319814736273,
+  "color_g_over_r": 0.6564395967919172,
+  "color_b_over_r": 0.3277617582492677
+ },
+ "repeats": [
+  {
+   "lag_s": 2357.9,
+   "median_similarity": 0.972,
+   "share_near_identical": 0.72
+  },
+  {
+   "lag_s": 4715.9,
+   "median_similarity": 0.968,
+   "share_near_identical": 0.59
+  },
+  {
+   "lag_s": 10041.2,
+   "median_similarity": 0.936,
+   "share_near_identical": 0.32
+  },
+  {
+   "lag_s": 7073.8,
+   "median_similarity": 0.917,
+   "share_near_identical": 0.4
+  },
+  {
+   "lag_s": 10211.0,
+   "median_similarity": 0.91,
+   "share_near_identical": 0.22
+  }
+ ],
+ "typical_similarity": 0.845
+}
