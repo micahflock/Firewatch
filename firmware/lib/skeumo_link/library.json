@@ -1,0 +1,7 @@
+{
+  "name": "skeumo_link",
+  "version": "0.1.0",
+  "description": "Signed BLE advertisement frames between Skeumo battery talismans and their powered host",
+  "frameworks": "*",
+  "platforms": "*"
+}

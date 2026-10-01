@@ -57,3 +57,20 @@ static const fw::Segment kLedLayout[] = {
 #define IR_LED_PIN -1
 
 #define HOSTNAME "firewatch"
+
+// ---- Apple Home (HomeSpan) ---------------------------------------------------------
+// Firewatch shows up in the Home app as a "Fireplace" switch (plus the lighter, below).
+// Pair it from the Home app: Add Accessory -> More options -> Firewatch, setup code
+// 466-37-726 unless you set HOMEKIT_SETUP_CODE in secrets.h.
+#define HOMEKIT_PORT 1201  // HomeKit's own port; the web page stays on 80
+
+// ---- Fireplace lighter (Skeumo BLE talisman) ---------------------------------------------
+// A battery lighter that broadcasts signed BLE frames. Needs SKEUMO_LINK_KEY in secrets.h,
+// identical to the lighter's. Set to 0 to leave Bluetooth off entirely.
+#define LIGHTER_ENABLED 1
+#define LIGHTER_DEVICE_ID 1       // must match the lighter's LIGHTER_DEVICE_ID
+#define LIGHTER_STRIKE_CHANNEL 1  // fixed by the lighter firmware
+#define LIGHTER_SNUFF_CHANNEL 2
+// 1 = a strike lights the fire and a snuff puts it out directly (fast, and works even when
+// the Home hub is away). The strike/snuff also appear in Apple Home either way, for scenes.
+#define LIGHTER_DIRECT 1
