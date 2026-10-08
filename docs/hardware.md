@@ -49,7 +49,7 @@ Why this combination:
 
 | | |
 |---|---|
-| PCB | 48.52 × 39.37 mm, 4× M2 holes on a 43.27 × 34.02 mm rectangle, about 30 mm tall with the ESP32 fitted |
+| PCB | 48.52 × 39.37 mm, 4× M2 holes on a 43.27 × 34.02 mm rectangle, 26 mm from the PCB underside to the tallest part with the ESP32 fitted (measured; the enclosure leaves 2 mm above that) |
 | LED data | **LED1 terminal = GPIO16** (`LED_PIN`). A jumper can move it to GPIO1; leave it on GPIO16, because GPIO1 is the serial TX pin. |
 | Button | GPIO0 (`BUTTON_PIN`) |
 | Spare GPIO | Q1 = GPIO15, Q2 = GPIO12 on the Q1/Q2 header (5V, GND, 3V3, Q2, Q1). Q3/Q4 = GPIO2/32. |
