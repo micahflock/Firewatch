@@ -21,7 +21,7 @@ part = "all";
 vesa_min = 75;
 vesa_max = 100;
 screw_d = 4.5;        // M4 clearance; use 6.6 for M6 TVs
-plate_t = 4;
+plate_t = 2;          // solid floor; 2 mm is plenty for PETG
 arm_w = 14;           // width of the arms around the VESA slots
 
 /* [Dig-Uno v3] */
@@ -30,15 +30,21 @@ pcb_x = 48.52;
 pcb_y = 39.37;
 hole_dx = 43.27;      // M2 hole centers
 hole_dy = 34.02;
-stack_h = 30;         // PCB underside to top of ESP32/capacitor, per QuinLED
+stack_h = 26;         // PCB underside to top of the tallest part (ESP32/capacitor), measured
 standoff_h = 5;
 standoff_d = 5.5;
 m2_pilot = 1.6;       // M2 self-tapping into plastic (use 3.2 for M2 heat-set inserts)
 margin_x = 9;         // room for the terminal wires to bend, both ends
 margin_y = 5;
+// M2 x 8 through the 1.6 mm PCB reaches 6.4 mm down; keep a 0.4 mm skin under the hole.
+pilot_depth = min(7, plate_t + standoff_h - 0.4);
 
 /* [Box] */
-wall = 2.4;
+// Vertical wall thicknesses that slice cleanly with a 0.4 mm nozzle: strong_wall for
+// walls that take load, light_wall for walls that only locate or guide.
+strong_wall = 1.67;
+light_wall = 0.86;
+wall = strong_wall;
 inner_h = standoff_h + stack_h + 2;
 power_window_w = 36;  // -X wall: power wires + USB-C access
 led_notch_w = 18;     // +X wall: LED output wires
@@ -48,9 +54,9 @@ ir_notch_x = -3;
 ir_notch_depth = 14;
 
 /* [Lid] */
-lid_t = 2.4;
+lid_t = 2;
 lip_h = 2;
-lip_t = 1.2;
+lip_t = light_wall;
 fit = 0.3;
 lid_screw_clear = 2.4; // M2
 boss_d = 7;
@@ -60,8 +66,9 @@ boss_x = 20;
 strip_w = 10;          // PCB width of the LED strip (10 or 12 mm are common)
 clip_angle = 45;       // 0 = face straight back, 90 = face straight out
 clip_len = 20;
-clip_wall = 1.4;
-clip_floor = 1.6;
+clip_wall = light_wall;  // the clip prints profile face down, so every thickness
+                         // in its profile is a vertical wall
+clip_floor = light_wall; // backed by the solid wedge underneath
 pcb_slot = 0.7;        // PCB + adhesive thickness under the retaining lips
 lip_over = 1.0;        // how far the lips overlap the PCB edge (clear of the LEDs)
 
@@ -89,9 +96,11 @@ module vesa_slots() {
 
 module zip_anchor() {
   // Bridge a cable tie passes under; the cable runs along X over it.
+  tie_w = 4;
+  aw = tie_w + 2 * strong_wall;
   difference() {
-    translate([-3, -5, 0]) cube([6, 10, 5]);
-    translate([-2, -5 - eps, 1.2]) cube([4, 10 + 2 * eps, 2.2]);
+    translate([-aw / 2, -5, 0]) cube([aw, 10, 5]);
+    translate([-tie_w / 2, -5 - eps, 1.2]) cube([tie_w, 10 + 2 * eps, 2.2]);
   }
 }
 
@@ -125,7 +134,7 @@ module base() {
     }
     vesa_slots();
     for (sx = [-1, 1], sy = [-1, 1]) {
-      translate([sx * hole_dx / 2, sy * hole_dy / 2, plate_t + standoff_h - 7]) cylinder(d = m2_pilot, h = 7 + eps);
+      translate([sx * hole_dx / 2, sy * hole_dy / 2, plate_t + standoff_h - pilot_depth]) cylinder(d = m2_pilot, h = pilot_depth + eps);
       translate([sx * boss_x, sy * boss_y, plate_t + inner_h - 8]) cylinder(d = m2_pilot, h = 8 + eps);
     }
     translate([-out_x / 2 - 1, -power_window_w / 2, plate_t + window_floor]) cube([wall + 2, power_window_w, inner_h]);
@@ -165,7 +174,7 @@ module board_ghost() {
 
 module clip_profile() {
   w = strip_w + 2 * clip_wall + 0.4;
-  h = clip_floor + pcb_slot + 1.0;
+  h = clip_floor + pcb_slot + light_wall;
   a = clip_angle;
   channel = [
     [0, 0], [w, 0], [w, h],
@@ -176,7 +185,7 @@ module clip_profile() {
     [0, h]];
   // Profile plane: x across the TV surface (-x points toward the TV edge), y away from
   // the TV. The mounting face is y = 0; the channel opens outward and backward.
-  base_t = 1.6;
+  base_t = strong_wall;   // the VHB mounting sole stays stiff and flat
   translate([0, base_t]) {
     rotate(a) polygon(channel);
     if (a > 0) polygon([[0, 0], [w * cos(a), w * sin(a)], [w * cos(a), 0]]);

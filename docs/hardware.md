@@ -49,7 +49,7 @@ Why this combination:
 
 | | |
 |---|---|
-| PCB | 48.52 × 39.37 mm, 4× M2 holes on a 43.27 × 34.02 mm rectangle, about 30 mm tall with the ESP32 fitted |
+| PCB | 48.52 × 39.37 mm, 4× M2 holes on a 43.27 × 34.02 mm rectangle, 26 mm from the PCB underside to the tallest part with the ESP32 fitted (measured; the enclosure leaves 2 mm above that) |
 | LED data | **LED1 terminal = GPIO16** (`LED_PIN`). A jumper can move it to GPIO1; leave it on GPIO16, because GPIO1 is the serial TX pin. |
 | Button | GPIO0 (`BUTTON_PIN`) |
 | Spare GPIO | Q1 = GPIO15, Q2 = GPIO12 on the Q1/Q2 header (5V, GND, 3V3, Q2, Q1). Q3/Q4 = GPIO2/32. |
@@ -139,14 +139,14 @@ Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_moun
 
 | File | What | Print |
 |---|---|---|
-| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
+| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 20% infill, no supports. Load-bearing walls are 1.67 mm, locating walls (lid lip, clip channel) 0.86 mm, and the plate is 2 mm (`strong_wall`, `light_wall`, `plate_t` in the source). |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
 | `strip_clip_10mm.stl` / `strip_clip_12mm.stl` | 45° clip that holds the strip facing outward and backward toward the firebox walls. The strip slides in from the end, and lips hold the PCB edges clear of the LEDs. | **Profile face down** (as exported). 14 needed. |
 
 The Dig-Uno fits with its power terminal and USB-C toward the window end and its LED output toward the notch end. The standoffs only fit that way round, or rotated 180°.
 
-**Installing the base:** use M4 × 12 pan-head screws through the 4 mm plate, which gives about 8 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use a shorter screw rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
+**Installing the base:** use M4 × 12 pan-head screws through the 2 mm plate, which gives about 10 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use an M4 × 10 (or add a washer) rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
 
 **Wi-Fi:** the board sits between the TV's metal chassis and the brick. Check the signal (`rssi` on the status page, in dBm). If it's worse than about −75, QuinLED sells an external-antenna version of the ESP32 board, and its lead can leave through the power window.
 
