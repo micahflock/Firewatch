@@ -139,7 +139,7 @@ Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_moun
 
 | File | What | Print |
 |---|---|---|
-| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 20% infill, no supports. Walls are 1.67 mm and the plate is 2 mm (`thin_wall`, `plate_t` in the source). |
+| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 20% infill, no supports. Load-bearing walls are 1.67 mm, locating walls (lid lip, clip channel) 0.86 mm, and the plate is 2 mm (`strong_wall`, `light_wall`, `plate_t` in the source). |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
 | `strip_clip_10mm.stl` / `strip_clip_12mm.stl` | 45° clip that holds the strip facing outward and backward toward the firebox walls. The strip slides in from the end, and lips hold the PCB edges clear of the LEDs. | **Profile face down** (as exported). 14 needed. |

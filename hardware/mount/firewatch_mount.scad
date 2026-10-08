@@ -40,9 +40,11 @@ margin_y = 5;
 pilot_depth = min(7, plate_t + standoff_h - 0.4);
 
 /* [Box] */
-// Thin vertical walls: 1.67 mm suits a 0.4 mm nozzle at the usual layer heights.
-thin_wall = 1.67;
-wall = thin_wall;
+// Vertical wall thicknesses that slice cleanly with a 0.4 mm nozzle: strong_wall for
+// walls that take load, light_wall for walls that only locate or guide.
+strong_wall = 1.67;
+light_wall = 0.86;
+wall = strong_wall;
 inner_h = standoff_h + stack_h + 2;
 power_window_w = 36;  // -X wall: power wires + USB-C access
 led_notch_w = 18;     // +X wall: LED output wires
@@ -54,7 +56,7 @@ ir_notch_depth = 14;
 /* [Lid] */
 lid_t = 2;
 lip_h = 2;
-lip_t = thin_wall;
+lip_t = light_wall;
 fit = 0.3;
 lid_screw_clear = 2.4; // M2
 boss_d = 7;
@@ -64,9 +66,9 @@ boss_x = 20;
 strip_w = 10;          // PCB width of the LED strip (10 or 12 mm are common)
 clip_angle = 45;       // 0 = face straight back, 90 = face straight out
 clip_len = 20;
-clip_wall = thin_wall;   // the clip prints profile face down, so every thickness
+clip_wall = light_wall;  // the clip prints profile face down, so every thickness
                          // in its profile is a vertical wall
-clip_floor = thin_wall;
+clip_floor = light_wall; // backed by the solid wedge underneath
 pcb_slot = 0.7;        // PCB + adhesive thickness under the retaining lips
 lip_over = 1.0;        // how far the lips overlap the PCB edge (clear of the LEDs)
 
@@ -95,7 +97,7 @@ module vesa_slots() {
 module zip_anchor() {
   // Bridge a cable tie passes under; the cable runs along X over it.
   tie_w = 4;
-  aw = tie_w + 2 * thin_wall;
+  aw = tie_w + 2 * strong_wall;
   difference() {
     translate([-aw / 2, -5, 0]) cube([aw, 10, 5]);
     translate([-tie_w / 2, -5 - eps, 1.2]) cube([tie_w, 10 + 2 * eps, 2.2]);
@@ -172,7 +174,7 @@ module board_ghost() {
 
 module clip_profile() {
   w = strip_w + 2 * clip_wall + 0.4;
-  h = clip_floor + pcb_slot + thin_wall;
+  h = clip_floor + pcb_slot + light_wall;
   a = clip_angle;
   channel = [
     [0, 0], [w, 0], [w, h],
@@ -183,7 +185,7 @@ module clip_profile() {
     [0, h]];
   // Profile plane: x across the TV surface (-x points toward the TV edge), y away from
   // the TV. The mounting face is y = 0; the channel opens outward and backward.
-  base_t = thin_wall;
+  base_t = strong_wall;   // the VHB mounting sole stays stiff and flat
   translate([0, base_t]) {
     rotate(a) polygon(channel);
     if (a > 0) polygon([[0, 0], [w * cos(a), w * sin(a)], [w * cos(a), 0]]);
