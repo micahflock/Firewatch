@@ -139,14 +139,14 @@ Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_moun
 
 | File | What | Print |
 |---|---|---|
-| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 3 walls, 20% infill, no supports |
+| `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 20% infill, no supports. Walls are 1.67 mm and the plate is 2 mm (`thin_wall`, `plate_t` in the source). |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
 | `strip_clip_10mm.stl` / `strip_clip_12mm.stl` | 45° clip that holds the strip facing outward and backward toward the firebox walls. The strip slides in from the end, and lips hold the PCB edges clear of the LEDs. | **Profile face down** (as exported). 14 needed. |
 
 The Dig-Uno fits with its power terminal and USB-C toward the window end and its LED output toward the notch end. The standoffs only fit that way round, or rotated 180°.
 
-**Installing the base:** use M4 × 12 pan-head screws through the 4 mm plate, which gives about 8 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use a shorter screw rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
+**Installing the base:** use M4 × 12 pan-head screws through the 2 mm plate, which gives about 10 mm of thread engagement. Turn each screw in by hand first: if one stops before the head seats, it's bottoming out in the insert, so use an M4 × 10 (or add a washer) rather than forcing it. The slots near the 75 mm positions sit close to the box walls, so use a screwdriver with a shaft of at least 75 mm. The 100 mm positions have plenty of clearance.
 
 **Wi-Fi:** the board sits between the TV's metal chassis and the brick. Check the signal (`rssi` on the status page, in dBm). If it's worse than about −75, QuinLED sells an external-antenna version of the ESP32 board, and its lead can leave through the power window.
 
