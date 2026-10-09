@@ -31,7 +31,8 @@ class HomeSync {
   }
 
   // Home now shows `wanted`; the device is at `actual`. Returns true when the scene's on/off
-  // must change to wanted.on.
+  // must change to wanted.on: against the device's state, or against Home's previous write if
+  // that one is still being carried out.
   bool homeWrote(HomeState wanted, HomeState actual, uint32_t nowMs);
 
   // Returns true when Home must be told `out` (and from then on shows it).

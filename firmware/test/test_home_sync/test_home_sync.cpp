@@ -65,6 +65,22 @@ void test_home_write_matching_state_is_not_a_command() {
   TEST_ASSERT_FALSE(h2.homeWrote(kOff, kOff, 1000));
 }
 
+void test_quick_reversing_tap_is_a_command() {
+  // Tap On, then Off while the net task is still busy with the On (lightsOn not yet true):
+  // the Off must still be sent, or the queued On wakes the TV that Home now shows as off.
+  HomeSync h;
+  h.seed(kOff);
+  TEST_ASSERT_TRUE(h.homeWrote(kOn, kOff, 1000));
+  TEST_ASSERT_TRUE(h.homeWrote(kOff, kOff, 1300));
+  // And the other way round: Off, then On while the PowerOff request is still running.
+  HomeSync h2;
+  h2.seed(kOn);
+  TEST_ASSERT_TRUE(h2.homeWrote(kOff, kOn, 1000));
+  TEST_ASSERT_TRUE(h2.homeWrote(kOn, kOn, 1300));
+  // Once the hold is over, the device's real state is the baseline again.
+  TEST_ASSERT_FALSE(h2.homeWrote(kOn, kOn, 7000));
+}
+
 void test_brightness_only_change_is_reported() {
   HomeSync h;
   h.seed(kOn);
@@ -113,6 +129,7 @@ int main() {
   RUN_TEST(test_home_write_holds_until_device_catches_up);
   RUN_TEST(test_hold_expires_and_reports_real_state);
   RUN_TEST(test_home_write_matching_state_is_not_a_command);
+  RUN_TEST(test_quick_reversing_tap_is_a_command);
   RUN_TEST(test_brightness_only_change_is_reported);
   RUN_TEST(test_brightness_write_from_home_is_not_echoed);
   RUN_TEST(test_hold_survives_millis_wraparound);
