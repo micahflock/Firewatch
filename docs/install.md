@@ -90,12 +90,12 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 
 ## 5. Build and install
 
-1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 14× `strip_clip_10mm.stl` (see the [print notes](hardware.md#mounting)).
+1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 14 each of `strip_clip_base_10mm.stl` and `strip_clip_cap_10mm.stl` (see the [print notes](hardware.md#mounting)).
 2. On the bench, cut the strip into its three runs (23/41/23 LEDs at the cut marks). Keep the JST plug on the start run. Solder the two corner bridges, extend the mating JST plug's pigtail with 22 AWG to reach the enclosure, heat-shrink each joint, and cover the far end's pads (see the [wiring notes](hardware.md#wiring)).
 3. Find + on the barrel pigtail with a multimeter and land its leads in the Dig-Uno's power input. Check that the LED1 jumper is on **GPIO16**; the firmware refuses to build for GPIO1.
 4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the bottom-left corner (front view), where the strip starts.
 5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the mating JST plug's leads in the LED output terminal (5V / LED1 / GND), and plug in the strip. Cable-tie the pigtail's jack and the strip leads to the anchors. From then on, the supply unplugs at the jack.
-6. Stick on the clips and fit the strip. Hold the wire runs down with scraps of VHB.
+6. Stick on the clip bases. Lay the strip on the seats, then press a cap over each seat in a gap between two LEDs until both hooks click under the seat. To take a cap off, spread one leg with a fingernail or small screwdriver. Hold the wire runs down with scraps of VHB.
 7. Open `http://firewatch.local` and press **Light the fire**. Check that the steady part of the glow is low on the sides and the lively flicker is across the top. If it's the other way round, the layout direction is reversed. Then fasten the lid with four M2 × 8 screws.
 
 ## 6. Apple Home
