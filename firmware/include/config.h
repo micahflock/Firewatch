@@ -59,7 +59,7 @@ static const fw::Segment kLedLayout[] = {
 #define HOSTNAME "firewatch"
 
 // ---- Apple Home (HomeSpan) ---------------------------------------------------------
-// Firewatch shows up in the Home app as a "Fireplace" switch (plus the lighter, below).
+// Firewatch shows up in the Home app as a dimmable "Fireplace" light (plus the lighter, below).
 // Pair it from the Home app: Add Accessory -> More options -> Firewatch, setup code
 // 466-37-726 unless you set HOMEKIT_SETUP_CODE in secrets.h.
 #define HOMEKIT_PORT 1201  // HomeKit's own port; the web page stays on 80

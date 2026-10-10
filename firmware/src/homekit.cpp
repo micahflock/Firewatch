@@ -2,34 +2,55 @@
 
 #include <HomeSpan.h>
 
+#include <atomic>
+
 #include "config.h"
+#include "home_sync.h"
 
 namespace homekit {
 namespace {
 
 Hooks hooks;
 QueueHandle_t lighterQueue;
+std::atomic<bool> isPaired{false};
 
-// The scene takes a moment to reflect a command (the net task picks it up from its queue),
-// so after a write from Apple Home, don't mirror the scene back until it has caught up.
-constexpr uint32_t kMirrorHoldMs = 2000;
+fw::HomeState actual() { return {hooks.fireOn(), hooks.brightness()}; }
 
-struct Fireplace : Service::Switch {
-  SpanCharacteristic* on;
-  uint32_t holdUntil = 0;
+// fw::HomeSync decides when a Home write is a scene command and when the scene's real state
+// goes back to Home (see home_sync.h); this is just the HomeSpan glue.
+struct Fireplace : Service::LightBulb {
+  SpanCharacteristic* power;
+  SpanCharacteristic* level;
+  fw::HomeSync sync;
+  uint32_t lastPollMs = 0;
 
-  Fireplace() { on = new Characteristic::On(hooks.fireOn()); }
+  Fireplace() {
+    const fw::HomeState now = actual();
+    power = new Characteristic::On(now.on);
+    level = new Characteristic::Brightness(now.brightness);
+    sync.seed(now);
+  }
 
+  // A write from Home (tile, Siri, scene, automation).
   boolean update() override {
-    hooks.setFire(on->getNewVal());
-    holdUntil = millis() + kMirrorHoldMs;
+    const fw::HomeState wanted{power->getNewVal() != 0, level->getNewVal()};
+    const fw::HomeState current = actual();
+    if (level->updated()) hooks.setBrightness(wanted.brightness);
+    // Only an actual On/Off write can start or stop the scene; a brightness-only write
+    // carries the tile's current on/off, which may be a few ms stale.
+    if (sync.homeWrote(wanted, current, millis()) && power->updated()) hooks.setFire(wanted.on);
     return true;
   }
 
+  // Push changes made elsewhere (remote, web page, button, lighter, TV auto-off) to Home.
   void loop() override {
-    if (static_cast<int32_t>(millis() - holdUntil) < 0) return;
-    const int state = hooks.fireOn() ? 1 : 0;
-    if (on->getVal() != state) on->setVal(state);
+    const uint32_t now = millis();
+    if (now - lastPollMs < 250) return;
+    lastPollMs = now;
+    fw::HomeState out;
+    if (!sync.poll(actual(), now, out)) return;
+    if ((power->getVal() != 0) != out.on) power->setVal(out.on);
+    if (level->getVal() != out.brightness) level->setVal(out.brightness);
   }
 };
 
@@ -88,11 +109,16 @@ void begin(const Hooks& h, const char* ssid, const char* password, const char* s
   homeSpan.setLogLevel(0);
   homeSpan.setPortNum(HOMEKIT_PORT);  // the web page keeps port 80
   homeSpan.setHostNameSuffix("");     // advertise as HOSTNAME.local, same as the web page
-  // Firewatch joins Wi-Fi itself; HomeSpan needs the credentials too, to start its server
-  // and to rejoin after a drop.
-  homeSpan.setWifiCredentials(ssid, password);
-  homeSpan.begin(Category::Bridges, "Firewatch", HOSTNAME, "Firewatch");
+  homeSpan.setWifiCredentials(ssid, password);  // HomeSpan joins, and rejoins after a drop
+  homeSpan.setWifiCallback([] { hooks.onWifiConnected(); });
+  // pairCallback covers pairing and unpairing; statusCallback also reports it at boot.
+  homeSpan.setPairCallback([](boolean p) { isPaired = p; });
+  homeSpan.setStatusCallback([](HS_STATUS s) {
+    if (s == HS_PAIRED) isPaired = true;
+    if (s == HS_PAIRING_NEEDED) isPaired = false;
+  });
   if (setupCode && *setupCode) homeSpan.setPairingCode(setupCode);
+  homeSpan.begin(Category::Bridges, "Firewatch", HOSTNAME, "Firewatch");
 
   new SpanAccessory();
   identity("Firewatch", "Firewatch bridge");
@@ -113,6 +139,8 @@ void begin(const Hooks& h, const char* ssid, const char* password, const char* s
 
   homeSpan.autoPoll(8192, 1, 0);  // core 0, next to the net and web tasks
 }
+
+bool paired() { return isPaired; }
 
 void lighterEvent(const skeumo::link::Message& m) {
   if (lighterQueue) xQueueSend(lighterQueue, &m, 0);

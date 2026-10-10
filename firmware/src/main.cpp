@@ -2,7 +2,8 @@
 //
 // Core 1 (Arduino loop): fire animation -> dithering -> LEDs at TARGET_FPS, plus button/OTA.
 // Core 0: "net" task polls the TV and runs the Scene state machine; "web" task serves HTTP;
-// HomeSpan's task serves Apple Home. The BLE host task delivers lighter frames.
+// HomeSpan's task serves Apple Home and owns Wi-Fi and mDNS. The BLE host task delivers
+// lighter frames.
 // The only state crossing tasks is a command queue, a few atomics and mutex-guarded status.
 
 #include <Arduino.h>
@@ -19,6 +20,7 @@
 
 #include "config.h"
 #include "fire.h"
+#include "home_sync.h"
 #include "homekit.h"
 #include "ir.h"
 #include "leds.h"
@@ -40,6 +42,10 @@
 #ifndef SKEUMO_LINK_KEY
 #define SKEUMO_LINK_KEY ""
 #endif
+// HomeSpan halts the whole board at boot on a setup code it rejects.
+static_assert(sizeof(HOMEKIT_SETUP_CODE) == 1 || fw::validSetupCode(HOMEKIT_SETUP_CODE),
+              "HOMEKIT_SETUP_CODE in secrets.h must be 8 digits, not all the same digit, "
+              "and not 12345678 or 87654321");
 
 namespace {
 
@@ -59,6 +65,25 @@ Status status;
 RokuClient roku;
 WebServer server(80);
 Preferences prefs;
+std::atomic<bool> wifiReady{false};
+
+void setBrightness(int pct) {
+  pct = constrain(pct, 0, 100);
+  brightnessPct = pct;
+  prefs.putUChar("bright", pct);
+}
+
+// Called once by HomeSpan when Wi-Fi first connects, after it has started mDNS as HOSTNAME.
+void onWifiConnected() {
+  Serial.printf("[wifi] connected %s\n", WiFi.localIP().toString().c_str());
+  MDNS.addService("http", "tcp", 80);
+  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  ArduinoOTA.setMdnsEnabled(false);  // HomeSpan owns mDNS; register OTA with it instead
+  ArduinoOTA.begin();
+  MDNS.enableArduino(3232, true);
+  wifiReady = true;
+}
 
 const char* stateName(fw::Scene::State s) {
   switch (s) {
@@ -179,6 +204,7 @@ void handleStatus() {
     j += "\"rejected\":" + String(l.rejected) + "},";
   }
 #endif
+  j += "\"homekit\":\"" + String(homekit::paired() ? "paired" : "unpaired") + "\",";
   j += "\"freeHeap\":" + String(ESP.getFreeHeap()) + ",";
   j += "\"uptimeS\":" + String(millis() / 1000) + ",";
   j += "\"rssi\":" + String(WiFi.RSSI()) + "}";
@@ -201,11 +227,7 @@ void webTask(void*) {
   });
 #endif
   server.on("/brightness", [] {
-    if (server.hasArg("value")) {
-      int v = constrain(server.arg("value").toInt(), 0, 100);
-      brightnessPct = v;
-      prefs.putUChar("bright", v);
-    }
+    if (server.hasArg("value")) setBrightness(server.arg("value").toInt());
     server.send(200, "application/json", "{\"brightness\":" + String(brightnessPct.load()) + "}");
   });
   server.begin();
@@ -263,21 +285,10 @@ void setup() {
   wire.resize(layout.size() * output->channels());
   leds::begin(layout.size());
 
+  // HomeSpan (homekit::begin) connects, reconnects and starts mDNS; see onWifiConnected().
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(HOSTNAME);
   WiFi.setSleep(false);  // modem sleep adds latency and drops SSDP replies
-  WiFi.setAutoReconnect(true);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  uint32_t start = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) delay(100);
-  Serial.printf("[wifi] %s %s\n", WiFi.status() == WL_CONNECTED ? "connected" : "not yet connected",
-                WiFi.localIP().toString().c_str());
-
-  MDNS.begin(HOSTNAME);
-  MDNS.addService("http", "tcp", 80);
-  ArduinoOTA.setHostname(HOSTNAME);
-  ArduinoOTA.setPassword(OTA_PASSWORD);
-  ArduinoOTA.begin();
 
   commandQueue = xQueueCreate(8, sizeof(fw::Command));
   xTaskCreatePinnedToCore(netTask, "net", 8192, nullptr, 1, nullptr, 0);
@@ -286,6 +297,9 @@ void setup() {
   homekit::Hooks hooks;
   hooks.setFire = [](bool on) { queueCommand(on ? fw::Command::On : fw::Command::Off); };
   hooks.fireOn = [] { return lightsOn.load(); };
+  hooks.setBrightness = setBrightness;
+  hooks.brightness = [] { return brightnessPct.load(); };
+  hooks.onWifiConnected = onWifiConnected;
   homekit::begin(hooks, WIFI_SSID, WIFI_PASSWORD, HOMEKIT_SETUP_CODE);
 
 #if LIGHTER_ENABLED
@@ -301,7 +315,7 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
+  if (wifiReady) ArduinoOTA.handle();
   pollButton();
 
   const int64_t now = esp_timer_get_time();

@@ -58,11 +58,7 @@ pio device monitor                                # logs: [wifi] ... [roku] ...
 
 For the first USB flash, **unplug the 5 V supply** (USB powers the board by itself). Later updates go over Wi-Fi with `pio run -e esp32-ota -t upload`, so the board can stay in its enclosure.
 
-**The OTA password** (`OTA_PASSWORD` in `secrets.h`) is a password you make up. It's written into the board at the first USB flash, and every later Wi-Fi update must supply the same one, so nobody else on your network can reflash the board. The uploader reads it from an environment variable, so it never goes into a file that's committed. Set it once in PowerShell, then restart VS Code:
-
-```powershell
-setx FIREWATCH_OTA_PASSWORD "the-same-password-as-in-secrets.h"
-```
+**The OTA password** (`OTA_PASSWORD` in `secrets.h`) is a password you make up. It's written into the board at the first USB flash, and every later Wi-Fi update must supply the same one, so nobody else on your network can reflash the board. `pio run -e esp32-ota -t upload` reads it from `secrets.h` by itself (`firmware/ota_auth.py`), so it never goes into a file that's committed.
 
 **Updating from a build without Apple Home:** flash once over USB (`pio run -e esp32 -t upload`), because the partition table changed to `min_spiffs` to make room. Your brightness setting is kept; later updates can go over Wi-Fi again.
 
@@ -84,7 +80,7 @@ What to set in [`config.h`](../firmware/include/config.h):
 | `LIGHTER_ENABLED` | 1 = listen for the Skeumo fireplace lighter over Bluetooth; 0 = Bluetooth off |
 | `LIGHTER_DIRECT` | 1 = a strike/snuff turns the fire on/off directly; 0 = only relay the buttons to Apple Home |
 
-And in `secrets.h`: `HOMEKIT_SETUP_CODE` (optional, 8 digits) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
+And in `secrets.h`: `HOMEKIT_SETUP_CODE` (optional, 8 digits; the build refuses codes Apple rejects, like `12345678`) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
 
 To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/firecore/src/fire.h): flicker bands, rise speed, flare rate, and so on. [`tools/preview`](../tools/preview) renders the result to a GIF on your computer without any hardware.
 
@@ -102,13 +98,15 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 
 In the Home app: **+ → Add Accessory → More options… → Firewatch**. The setup code is **466-37-726** unless you set `HOMEKIT_SETUP_CODE`. Accept the "uncertified accessory" warning and place the **Fireplace** (and **Lighter**, if enabled) in the room. The serial log (`pio device monitor`) prints the pairing status. HomeSpan's serial commands also work there: type `?` for the list, and `S 12345678` changes the setup code.
 
+The Fireplace is a dimmable light: its brightness is the same setting as the web page's slider. Siri's "all the lights" commands include it, which turns the TV off or on along with the glow. A command that matches the current state ("turn on" while it's already on) does nothing, so it never interrupts what the TV is playing.
+
 Try it: "Hey Siri, turn on the fireplace". Then add an automation: **When Fireplace turns on → set the living room lights**, and one for **turns off**.
 
 ## 7. Daily use
 
 - **On:** press power on the Roku remote. The glow swells in, and within a few seconds the Roku goes from Home to the fire video. You can also use `http://firewatch.local/on` (bookmark it or add it to a phone shortcut) or the Dig-Uno's button.
 - **Off:** press power on the remote (the glow fades out), or use `/off`, which also turns the TV off.
-- **Apple Home:** the **Fireplace** switch, Siri, or any scene that includes it. It also turns on and off by itself when you use the remote.
+- **Apple Home:** the **Fireplace** tile (on/off and brightness), Siri, or any scene that includes it. It also turns on and off by itself when you use the remote.
 - **Lighter:** open the lid and roll the wheel to light the fire; close the lid to put it out.
 - **Video stuck or paused:** press **Restart video** on the web page, or use `/relaunch`.
 
@@ -128,3 +126,6 @@ Endpoints accept GET or POST: `/on`, `/off`, `/toggle`, `/relaunch`, `/brightnes
 | Firewatch not in Home's "Add Accessory" list | Phone on the same network; the ESP32 needs 2.4 GHz (step 1.6). If it was paired before and removed from Home, type `U` in the serial monitor to unpair, then add it again. |
 | Lighter does nothing | `/status` → `lighter.link` must be `ok` (key in `secrets.h`). `rejected` counting up means the two keys differ. `lastSeenS` staying null: out of range, or the lighter isn't sending (check its serial log). |
 | Glow too dim on sooty brick | Raise the brightness slider; if the current estimate hits the cap, raise `POWER_BUDGET_MA` (supply permitting) |
+| `firewatch.local` sometimes doesn't load from a Windows PC | Windows' `.local` lookups miss now and then; the board itself is fine. Bookmark its IP address instead (shown in the serial log as `[wifi] connected ...`), or give it a DHCP reservation. OTA uploads retry the lookup by themselves. |
+| Home says "No Response" | Wi-Fi dropped. HomeSpan reconnects by itself within a minute. Away from home, you need a home hub (Apple TV or HomePod). |
+| Re-pair from scratch | Remove Firewatch in the Home app (Accessory Settings → Remove Accessory), then add it again. If Home lost it but `/status` still says `"homekit":"paired"`: USB cable, `pio device monitor`, type `U` and Enter to forget all pairings. |

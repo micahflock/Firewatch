@@ -4,8 +4,8 @@
 #define WIFI_PASSWORD "your-password"
 #define OTA_PASSWORD "change-me"
 
-// Optional: your own 8-digit Apple Home setup code (not a trivial one like 12345678).
-// Without it, HomeSpan's default code 466-37-726 is used.
+// Optional: your own 8-digit Apple Home setup code. The build refuses codes Apple rejects:
+// all the same digit, 12345678 or 87654321. Without it, HomeSpan's default 466-37-726 is used.
 // #define HOMEKIT_SETUP_CODE "20481357"
 
 // Shared secret for the fireplace lighter: 32 hex digits, identical to SKEUMO_LINK_KEY in
