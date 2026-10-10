@@ -25,7 +25,7 @@ def resolve_upload_port(source, target, env):
     host = env.subst("$UPLOAD_PORT")
     if not host.endswith(".local"):
         return
-    for attempt in range(5):
+    for attempt in range(15):  # a cold lookup can miss for several seconds
         try:
             ip = socket.gethostbyname(host)
             print("ota_auth.py: %s is %s" % (host, ip))
