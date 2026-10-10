@@ -67,7 +67,7 @@ static const fw::Segment kLedLayout[] = {
 // ---- Fireplace lighter (Skeumo BLE talisman) ---------------------------------------------
 // A battery lighter that broadcasts signed BLE frames. Needs SKEUMO_LINK_KEY in secrets.h,
 // identical to the lighter's. Set to 0 to leave Bluetooth off entirely.
-#define LIGHTER_ENABLED 1
+#define LIGHTER_ENABLED 0
 #define LIGHTER_DEVICE_ID 1       // must match the lighter's LIGHTER_DEVICE_ID
 #define LIGHTER_STRIKE_CHANNEL 1  // fixed by the lighter firmware
 #define LIGHTER_SNUFF_CHANNEL 2

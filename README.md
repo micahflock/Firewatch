@@ -31,7 +31,7 @@ A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter
 
 ## Apple Home and the lighter
 
-**Pairing.** In the Home app: **+ → Add Accessory → More options… → Firewatch**, then enter the setup code: **466-37-726**, or your own if you set `HOMEKIT_SETUP_CODE` in `secrets.h`. Accept the "uncertified accessory" prompt. Firewatch is a bridge, so you'll be asked to place two accessories:
+**Pairing.** In the Home app: **+ → Add Accessory → More options… → Firewatch**, then enter the setup code: **466-37-726**, or your own if you set `HOMEKIT_SETUP_CODE` in `secrets.h`. Accept the "uncertified accessory" prompt. Firewatch is a bridge, so you'll be asked to place its accessories (the Lighter only with `LIGHTER_ENABLED 1` in `config.h`):
 
 | Accessory | What it is | Use it for |
 |---|---|---|
