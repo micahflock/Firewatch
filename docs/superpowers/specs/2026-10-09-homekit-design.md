@@ -1,6 +1,8 @@
 # Native HomeKit for Firewatch — design
 
-Date: 2026-10-09. Status: approved in conversation, pending spec review.
+Date: 2026-10-09. Status: implemented.
+
+> **As merged:** this was first built as a standalone accessory, then ported onto the HomeSpan bridge already on `main` (Fireplace + Lighter, PR #1). What carried over: the dimmable Fireplace light, `fw::HomeSync` and its tests, HomeSpan owning Wi-Fi and mDNS, the compile-time setup-code check, and `ota_auth.py`. The bridge keeps `main`'s `HOMEKIT_PORT 1201` and accessory layout.
 
 ## Goal
 
