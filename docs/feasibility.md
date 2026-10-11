@@ -113,7 +113,7 @@ What that means for the glow:
 - **The lower part of each side, lit by the ember bed, is nearly steady (±5%), and the flame tips at the top do the flickering (±30%).** The previous engine flickered the whole strip uniformly.
 - **The sides flicker independently of each other,** as flames do on the left and right of a real fire.
 - **Flares are small,** because big ones would add variation this video doesn't have.
-- **The color moved from red-orange to amber.** It stops short of the video's own average (0.66 · 0.33), because the camera clips the flames to near-white. Matched exactly, the LEDs look peach. The palette gets hue from red plus green and uses warm-white as support.
+- **The color moved from red-orange to amber.** It stops short of the video's own average (0.66 · 0.33), because the camera clips the flames to near-white. Matched exactly, the LEDs look peach. The palette gets hue from red plus green and uses warm-white as support. *Update:* on the installed strip even that support read as too white and too subtle against the brick, so the palette now runs on red, uses green only to set how orange it is, and adds warm white only to flares.
 - **The video is slightly brighter on the right (by about 20%),** where its flames lean. The engine is symmetric, so it doesn't reproduce this.
 
 **Limits:**

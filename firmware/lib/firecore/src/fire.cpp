@@ -41,18 +41,17 @@ struct Stop {
   float heat;
   Rgbw c;
 };
-// Linear-light values (LED PWM duty), not sRGB. Hues follow the fireplace video's
-// measured flame colors (tools/video_match), but mid and bright tones are built from red
-// + green with warm white as support: the white die carries blue, and leaning on it turns
-// the glow peach rather than amber.
+// Linear-light values (LED PWM duty), not sRGB. Red carries the glow and green alone sets
+// how orange it is. Warm white only enters on flares: on the strip the white die outshines
+// the red one, so even a little of it washes the glow out to peach-white on dark brick.
 const Stop kPalette[] = {
     {0.00f, {0.000f, 0.000f, 0.000f, 0.000f}},
-    {0.20f, {0.092f, 0.011f, 0.000f, 0.008f}},  // deep ember
-    {0.45f, {0.290f, 0.045f, 0.000f, 0.050f}},  // ember red-orange
-    {0.70f, {0.450f, 0.120f, 0.000f, 0.150f}},  // orange
-    {0.90f, {0.400f, 0.160f, 0.000f, 0.300f}},  // amber
-    {1.10f, {0.350f, 0.200f, 0.000f, 0.500f}},  // yellow flame
-    {1.40f, {0.300f, 0.220f, 0.000f, 0.850f}},  // flare: bright warm yellow-white
+    {0.20f, {0.140f, 0.006f, 0.000f, 0.000f}},  // deep ember
+    {0.45f, {0.420f, 0.030f, 0.000f, 0.000f}},  // ember red
+    {0.70f, {0.700f, 0.090f, 0.000f, 0.010f}},  // red-orange
+    {0.90f, {0.900f, 0.170f, 0.000f, 0.030f}},  // orange
+    {1.10f, {1.000f, 0.260f, 0.000f, 0.070f}},  // deep amber
+    {1.40f, {1.000f, 0.380f, 0.000f, 0.250f}},  // flare: hot amber
 };
 constexpr int kStops = sizeof(kPalette) / sizeof(kPalette[0]);
 
