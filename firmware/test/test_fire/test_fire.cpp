@@ -11,18 +11,18 @@ void setUp() {}
 void tearDown() {}
 
 // The shipped layout: left side up, across the top, right side down; no bottom edge.
-static std::vector<LedPos> sides87() {
-  const Segment segs[] = {{0, 0, 0, 1, 23}, {0, 1, 1, 1, 41}, {1, 1, 1, 0, 23}};
+static std::vector<LedPos> sides72() {
+  const Segment segs[] = {{0, 0, 0, 1, 17}, {0, 1, 1, 1, 38}, {1, 1, 1, 0, 17}};
   return buildLayout(segs, 3);
 }
 
 void test_layout_positions() {
-  auto l = sides87();
-  TEST_ASSERT_EQUAL(87, l.size());
+  auto l = sides72();
+  TEST_ASSERT_EQUAL(72, l.size());
   TEST_ASSERT_FLOAT_WITHIN(1e-4, 0.0f, l[0].x);
-  TEST_ASSERT_FLOAT_WITHIN(1e-4, 0.5f / 23, l[0].y);
-  TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[23].y);
-  TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[86].x);
+  TEST_ASSERT_FLOAT_WITHIN(1e-4, 0.5f / 17, l[0].y);
+  TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[17].y);
+  TEST_ASSERT_FLOAT_WITHIN(1e-4, 1.0f, l[71].x);
 }
 
 void test_noise_is_bounded_and_periodic() {
@@ -55,7 +55,7 @@ static double cv(const std::vector<double>& v) {
 }
 
 void test_fire_is_steady_low_and_lively_on_top() {
-  auto layout = sides87();
+  auto layout = sides72();
   FireEngine fire(layout, 1234);
   std::vector<Rgbw> px(fire.size());
   double change = 0;
@@ -75,12 +75,12 @@ void test_fire_is_steady_low_and_lively_on_top() {
     low.push_back(b);
   }
   TEST_ASSERT_TRUE(cv(top) > 2.0 * cv(low));  // steady low on the sides, lively flame tips
-  TEST_ASSERT_TRUE(change / (3000.0 * 87) > 0.001);  // flickers
-  TEST_ASSERT_TRUE(change / (3000.0 * 87) < 0.05);   // but not strobing at 100 fps
+  TEST_ASSERT_TRUE(change / (3000.0 * 72) > 0.001);  // flickers
+  TEST_ASSERT_TRUE(change / (3000.0 * 72) < 0.05);   // but not strobing at 100 fps
 }
 
 void test_fire_survives_long_uptime() {
-  FireEngine fire(sides87(), 99);
+  FireEngine fire(sides72(), 99);
   std::vector<Rgbw> px(fire.size());
   double t0 = 45.0 * 24 * 3600;  // 45 days
   for (int f = 0; f < 500; ++f) {

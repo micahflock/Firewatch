@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   const int frames = argc > 1 ? std::atoi(argv[1]) : 300;
   const double fps = argc > 2 ? std::atof(argv[2]) : 25.0;
   // Same default layout as firmware/include/config.h.
-  const fw::Segment segs[] = {{0, 0, 0, 1, 23}, {0, 1, 1, 1, 41}, {1, 1, 1, 0, 23}};
+  const fw::Segment segs[] = {{0, 0, 0, 1, 17}, {0, 1, 1, 1, 38}, {1, 1, 1, 0, 17}};
   auto layout = fw::buildLayout(segs, 3);
   fw::FireEngine fire(layout, 42);
   for (int i = 3; i < argc; ++i) {

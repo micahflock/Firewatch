@@ -40,7 +40,7 @@ The Dig-Uno ships with WLED installed, which is handy for proving the wiring bef
 
 1. Land the barrel pigtail's leads in the Dig-Uno's power input (+ found with a multimeter), then plug in the supply. Wire the strip's mating JST plug (cut from the reel's far end) to the LED output (5V / LED1 / GND) and plug the strip in, per the [wiring diagram](hardware.md#wiring). Lay the strip loose on a table.
 2. Power up, join the `WLED-AP` Wi-Fi network from your phone (password `wled1234`), and give it your home Wi-Fi.
-3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **87**, and data GPIO **16**. Then pick the "Fire 2012" effect.
+3. In WLED → Config → LED Preferences, set the LED type to **SK6812 RGBW**, the count to **75**, and data GPIO **16**. Then pick the "Fire 2012" effect.
 4. If the whole strip lights with sensible colors, the wiring is right. WLED can be reinstalled any time from [install.wled.me](https://install.wled.me) if you ever want it back.
 
 ## 4. Firmware
@@ -69,7 +69,8 @@ What to set in [`config.h`](../firmware/include/config.h):
 | `FIRE_CONTENT_ID` | The YouTube fireplace video ID. It's already set to yours (`CF00JqnCcsU`). |
 | `ROKU_HOST` | The TV's reserved IP address (set to `192.168.1.176`). If it's empty, the TV is found by SSDP discovery. |
 | `ROKU_WIFI_MAC` | The TV's Wi-Fi MAC, for Wake-on-LAN before the firmware has read it from the TV (set to `D4:AB:CD:A8:96:96`) |
-| `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 23/41/23 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
+| `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 17/38/17 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
+| `LED_LEAD_IN` | Dark LEDs at the start of the strip, ahead of the first run (default 3) |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
 | `POWER_BUDGET_MA` | Supply current cap (2500 mA; right for a 3 A or 4 A supply) |
 | `DEFAULT_BRIGHTNESS` | Start value. After that, the web page's slider sets it, and it's saved across reboots. |
@@ -87,7 +88,7 @@ To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/f
 ## 5. Build and install
 
 1. Print `firewatch_base.stl`, `firewatch_lid.stl`, and 14 each of `strip_clip_base_10mm.stl` and `strip_clip_cap_10mm.stl` (see the [print notes](hardware.md#mounting)).
-2. On the bench, cut the strip into its three runs (23/41/23 LEDs at the cut marks). Keep the JST plug on the start run. Solder the two corner bridges, extend the mating JST plug's pigtail with 22 AWG to reach the enclosure, heat-shrink each joint, and cover the far end's pads (see the [wiring notes](hardware.md#wiring)).
+2. On the bench, cut the strip to length: 3 lead-in LEDs plus 17/38/17 (75 in all), cutting at a cut mark. Keep the JST plug on the start end. The strip bends around the two top corners in one piece. Extend the mating JST plug's pigtail with 22 AWG to reach the enclosure, heat-shrink each joint, and cover the far end's pads (see the [wiring notes](hardware.md#wiring)).
 3. Find + on the barrel pigtail with a multimeter and land its leads in the Dig-Uno's power input. Check that the LED1 jumper is on **GPIO16**; the firmware refuses to build for GPIO1.
 4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the bottom-left corner (front view), where the strip starts.
 5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the mating JST plug's leads in the LED output terminal (5V / LED1 / GND), and plug in the strip. Cable-tie the pigtail's jack and the strip leads to the anchors. From then on, the supply unplugs at the jack.

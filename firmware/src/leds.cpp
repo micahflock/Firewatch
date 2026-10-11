@@ -20,9 +20,10 @@ Strip* strip = nullptr;
 size_t n = 0;
 }  // namespace
 
+// The LED_LEAD_IN pixels ahead of the layout are left at 0 by ClearTo() and never written.
 void begin(size_t count) {
   n = count;
-  strip = new Strip(count, LED_PIN);
+  strip = new Strip(LED_LEAD_IN + count, LED_PIN);
   strip->Begin();
   strip->ClearTo(0);
   strip->Show();
@@ -34,10 +35,10 @@ void show(const uint8_t* px) {
   for (size_t i = 0; i < n; ++i) {
 #if LED_RGBW
     const uint8_t* p = px + i * 4;
-    strip->SetPixelColor(i, RgbwColor(p[0], p[1], p[2], p[3]));
+    strip->SetPixelColor(LED_LEAD_IN + i, RgbwColor(p[0], p[1], p[2], p[3]));
 #else
     const uint8_t* p = px + i * 3;
-    strip->SetPixelColor(i, RgbColor(p[0], p[1], p[2]));
+    strip->SetPixelColor(LED_LEAD_IN + i, RgbColor(p[0], p[1], p[2]));
 #endif
   }
   strip->Show();

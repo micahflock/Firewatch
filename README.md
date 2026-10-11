@@ -16,7 +16,7 @@ flowchart LR
   Z[Fireplace lighter<br>battery, BLE] -.->|signed BLE burst:<br>strike / snuff| E
   E[ESP32] -->|ECP: device-info, active-app<br>every 2 s| TV
   E -->|ECP: PowerOn/Off,<br>launch YouTube video| TV
-  E -->|I2S DMA, 120 fps| L[SK6812 RGBW strip<br>87 LEDs: sides + top of TV back]
+  E -->|I2S DMA, 120 fps| L[SK6812 RGBW strip<br>72 lit LEDs: sides + top of TV back]
 ```
 
 - **One action either way.** Turning the TV on by any means makes the ESP32 start the glow and launch the fire video. Turning on the scene from Firewatch wakes the TV over Roku's network API (ECP). Off works the same way in both directions. See [feasibility](docs/feasibility.md).

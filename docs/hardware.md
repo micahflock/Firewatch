@@ -6,7 +6,7 @@
 - **Glitch-free LED timing while Wi-Fi is busy.** The LED bitstream should come from DMA hardware, not CPU bit-banging.
 - **Good low-brightness color.** A fire glow in a dark room lives in the bottom 10–30% of an LED's range, where 8-bit channels show visible steps.
 - **Warm color quality.** The light falls on brick, the mantel, and the room, so it should look like firelight, not like "RGB orange".
-- **About 1.5 m of strip.** It runs up the left side, across the top and down the right side of the TV's back, about 20 mm in from the edges (the TV is 731 × 437 mm), with none along the bottom. At 87 LEDs, voltage drop is a non-issue at 5 V, and feeding power at the start alone is enough.
+- **About 1.5 m of strip.** It runs up the left side, across the top and down the right side of the TV's back, about 20 mm in from the edges (the TV is 731 × 437 mm), with none along the bottom. At 75 LEDs (3 dark lead-in + 72 lit), voltage drop is a non-issue at 5 V, and feeding power at the start alone is enough.
 
 The light doesn't need to be dotless or high-density. The strip faces the firebox walls, not the viewer, so all you see is diffuse reflection.
 
@@ -16,7 +16,7 @@ The light doesn't need to be dotless or high-density. The strip faces the firebo
 |---|---|---|---|
 | **QuinLED Dig-Uno v3 (classic ESP32 on a LED carrier board)** | The same classic ESP32 as below, plus a level shifter, 10 A fuse, bulk capacitors, screw terminals, USB-C and a 5–24 V input on one board. No soldering, and no parts packs to buy. | $27.50–37.50 + shipping from a small shop; needs its own mount (provided) | **Chosen** |
 | ESP32 dev board (classic, WROOM-32E DevKitC) + DIY perfboard | Same chip and firmware; cheapest *if you already have a parts bin* (≈$16 in parts) | You solder a level shifter, fuse, terminals and diode yourself; buying all those parts in packs from scratch costs more than a Dig-Uno | Good if you have parts on hand |
-| ESP32-S3 | Native USB, more RAM, PSRAM variants | No benefit for 87 LEDs; the parallel-I2S LED drivers are younger on the S3 | Fine, not better |
+| ESP32-S3 | Native USB, more RAM, PSRAM variants | No benefit for 75 LEDs; the parallel-I2S LED drivers are younger on the S3 | Fine, not better |
 | ESP32-C3 / C6 | Tiny and cheap | Single core shared with Wi-Fi; fewer RMT channels; C6 LED support is still young | Workable, not ideal |
 | Raspberry Pi Pico 2 W | PIO gives perfect LED timing | HTTP, mDNS and OTA are less polished under Arduino; no real advantage here | No |
 | Other ready-made ESP32 LED boxes (Gledopto, Athom "WLED" controllers) | Cased, cheap | Pinouts vary by vendor, less documented; not all expose USB for flashing | Workable; set `LED_PIN` |
@@ -62,7 +62,7 @@ This keeps the number of separate purchases small. It assumes you already have a
 | # | Part | Qty used | What to buy | ≈ $ |
 |---|---|---|---|---|
 | 1 | **QuinLED Dig-Uno v3, pre-assembled, with QuinLED-ESP32, onboard antenna** | 1 | [quinled.info](https://quinled.info/pre-assembled-quinled-dig-uno/) or a listed distributor | 27.50–37.50 + shipping |
-| 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 1.5 m (87 LEDs) | 2 m reel, leaving spare LEDs for mistakes | 20 |
+| 2 | **SK6812 RGBW, warm white (≈3000 K), 5 V, 60 LED/m, 10 mm, IP30** (e.g. BTF-LIGHTING) | 1.25 m (75 LEDs) | 2 m reel, leaving spare LEDs for mistakes | 20 |
 | 3 | **5 V DC supply, 3–4 A, 5.5 × 2.1 mm center-positive plug**: Mean Well GST25A05-P1J (4 A, the most proven for 24/7 use) or BTF-LIGHTING 5 V 3 A adapter | 1 | Check the unit carries a UL/ETL mark. Some BTF adapters include a female barrel-to-screw-terminal adapter, which replaces item 4. | 13–15 |
 | 4 | Female 5.5 × 2.1 mm DC barrel jack pigtail (pre-wired, ~15–20 cm leads) | 1 | Pack of 5–10. Its leads go into the Dig-Uno's power input, so the supply unplugs at the jack. | 7 |
 | 5 | 22 AWG 3-conductor LED wire | ~1 m | 5 m roll. It's used for every connection: the run to the strip start and the two corner bridges. | 8 |
@@ -111,7 +111,7 @@ This keeps the number of separate purchases small. It assumes you already have a
 Notes:
 - **Supply polarity.** Pigtail lead colors aren't guaranteed. Plug the supply in, check which lead is + with a multimeter (leads apart), and unplug it again before landing them in the terminal.
 - **Strain relief.** Cable-tie the pigtail's jack to one of the power-side anchors, so unplugging the supply pulls on the anchor, not the screw terminal.
-- **One feed is enough.** QuinLED's guidance is that a 5 V strip of up to about 90 LEDs can be fed from one end, and this one is 87, drawing about 1–1.6 A. The far end is at the opposite bottom corner, so skipping a second feed also saves a wire across the TV. Don't tin the wire ends that go into the screw terminals; tinned wire loosens over time.
+- **One feed is enough.** QuinLED's guidance is that a 5 V strip of up to about 90 LEDs can be fed from one end, and this one is 75, drawing about 1–1.6 A. The far end is at the opposite bottom corner, so skipping a second feed also saves a wire across the TV. Don't tin the wire ends that go into the screw terminals; tinned wire loosens over time.
 - **Strip connector.** BTF reels come with a JST-SM 3-pin plug on each end, and the two plugs mate. Keep the plug on the strip's **start** end (data arrows pointing away from it). Cut the other plug off the reel's far end with its pigtail, extend its three wires with the 22 AWG run (solder + heat-shrink), and land them in the Dig-Uno's LED output. The strip then unplugs from the controller at the connector. Match wires by what they connect to, not by color: follow each pigtail wire to the `+5V`, `Din` and `GND` pads, or check with a multimeter. Trim or heat-shrink any loose extra power leads, and cover the far end's bare pads.
 - **Common ground** is automatic: everything shares the supply's GND at the Dig-Uno.
 - **Don't cut strip power when "off".** An unpowered strip gets back-powered through its data line. Idle draw is about 1 mA per LED (≈0.6 W) plus about 0.5 W for the ESP32.
@@ -121,7 +121,7 @@ Notes:
 
 | | Current (5 V) |
 |---|---|
-| Theoretical max: 87 LEDs × 4 channels × ~15 mA | 5.2 A (never reached) |
+| Theoretical max: 72 lit LEDs × 4 channels × ~15 mA | 4.3 A (never reached) |
 | Firmware cap (`POWER_BUDGET_MA`), including the ESP32 | 2.5 A |
 | Fire at 60% brightness (default), firmware estimate over 100 s, all-in | avg 1.0 A, peak 1.1 A |
 | Fire at 100% brightness | avg 1.4 A, peak 1.6 A |
@@ -150,4 +150,4 @@ The Dig-Uno fits with its power terminal and USB-C toward the window end and its
 
 **Wi-Fi:** the board sits between the TV's metal chassis and the brick. Check the signal (`rssi` on the status page, in dBm). If it's worse than about −75, QuinLED sells an external-antenna version of the ESP32 board, and its lead can leave through the power window.
 
-**Strip placement:** put clips about 20 mm in from the TV's outer edge, up the left side, across the top and down the right side (none along the bottom). Space them every ~15 cm, plus one on each side of the two top corners (about 12–14 in total), with the seat facing outward. **At the two top corners, cut the strip at the copper cut marks and bridge the three pads with short lengths of the 22 AWG 3-conductor wire**, soldered on the bench before fitting. Folding the strip also works and saves the joints, but it stresses the flexible PCB and costs about one LED of length per corner. Clean the TV back with isopropyl alcohol before applying the VHB, and press for 30 s. If your per-side LED counts differ from 23/41/23, put them in `kLedLayout`.
+**Strip placement:** put clips about 20 mm in from the TV's outer edge, up the left side, across the top and down the right side (none along the bottom). Space them every ~15 cm, plus one on each side of the two top corners (about 12–14 in total), with the seat facing outward. **At the two top corners, bend the strip around in one piece** (the as-built choice). It saves four solder joints, at the cost of some stress on the flexible PCB and roughly one LED of length per corner. Alternatively, cut at the copper cut marks and bridge the three pads with short lengths of the 22 AWG 3-conductor wire, soldered on the bench before fitting. The first 3 LEDs of the strip serve as a dark lead-in that carries the plug end out to where the left run starts (`LED_LEAD_IN`). Clean the TV back with isopropyl alcohol before applying the VHB, and press for 30 s. If your per-side LED counts differ from 17/38/17, put them in `kLedLayout`.

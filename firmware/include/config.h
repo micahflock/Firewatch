@@ -10,14 +10,19 @@
 // Its jumper can move LED1 to GPIO1, but GPIO1 is the serial TX pin: keep it on GPIO16.
 #define LED_PIN 16
 
-// Strip wiring, in data order, as seen FROM THE FRONT of the TV (x: 0=left, 1=right;
-// y: 0=bottom, 1=top). Default: 60 LED/m on the left side, top and right side of a TCL
-// 32S335 back, inset ~20 mm, no bottom edge. Data enters at the bottom of the left side
-// (front view) and runs clockwise, ending at the bottom of the right side.
+// LEDs at the start of the strip that stay dark: a short lead-in that extends the plug end
+// to where the first lit run begins. They're still clocked through, just never lit.
+#define LED_LEAD_IN 3
+
+// Strip wiring after the lead-in, in data order, as seen FROM THE FRONT of the TV (x: 0=left,
+// 1=right; y: 0=bottom, 1=top). As fitted: 60 LED/m on the left side, top and right side of
+// a TCL 32S335 back, bent (not cut) around the two top corners, no bottom edge. Data enters
+// at the bottom of the left side (front view) and runs clockwise, ending at the bottom of the
+// right side.
 static const fw::Segment kLedLayout[] = {
-    {0, 0, 0, 1, 23},  // left side, bottom -> top
-    {0, 1, 1, 1, 41},  // top, left -> right
-    {1, 1, 1, 0, 23},  // right side, top -> bottom
+    {0, 0, 0, 1, 17},  // left side, bottom -> top
+    {0, 1, 1, 1, 38},  // top, left -> right
+    {1, 1, 1, 0, 17},  // right side, top -> bottom
 };
 
 // Power budget for the whole 5 V rail. 2.5 A leaves headroom on a 3 A supply; the fire
