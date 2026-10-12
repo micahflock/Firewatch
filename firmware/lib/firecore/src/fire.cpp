@@ -119,9 +119,6 @@ void FireEngine::render(double t, Rgbw* out) {
                  p.flickerFast * noise3(wrap256(t * p.rateFast), 20.5f, 0.5f);
   float breath = 1.0f + p.breathAmount * noise3(wrap256(t * p.breathRate), 30.5f, 0.5f);
 
-  float dimZ = wrap256(t * p.dimRate);
-  float dimAll = noise3(wrap256(t * p.dimRate * 0.7), 40.5f, 0.5f);
-
   float rise = wrap256(t * p.riseSpeed);
   float evolve = wrap256(t * p.evolveSpeed);
 
@@ -145,11 +142,7 @@ void FireEngine::render(double t, Rgbw* out) {
       float d = (x - flares_[f].x0) / 0.25f;
       heat += amp * flareEnv[f] * std::exp(-d * d);
     }
-    float d = (1 - p.dimGlobal) * noise3(x * p.dimScaleX + 50.5f, y * p.dimScaleY, dimZ) + p.dimGlobal * dimAll;
-    float depth = p.dimBottom + (p.dimTop - p.dimBottom) * y;
-    float level = 1.0f - depth * (1.0f - clamp01(p.dimLevel + p.dimSwing * d));
-    Rgbw c = heatToColor(heat);
-    out[i] = {c.r * level, c.g * level, c.b * level, c.w * level};
+    out[i] = heatToColor(heat);
   }
 }
 

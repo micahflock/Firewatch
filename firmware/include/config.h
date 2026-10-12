@@ -31,7 +31,7 @@ static const fw::Segment kLedLayout[] = {
 #define MA_PER_CHANNEL 15  // measured-ish for 5050 SK6812/WS2812B at full duty
 
 // Default master brightness (0-100). Adjustable at runtime from the web page.
-#define DEFAULT_BRIGHTNESS 30
+#define DEFAULT_BRIGHTNESS 80
 #define FADE_IN_S 3.0f
 #define FADE_OUT_S 2.5f
 #define TARGET_FPS 120  // high frame rate makes the temporal dithering invisible

@@ -123,11 +123,11 @@ Notes:
 |---|---|
 | Theoretical max: 72 lit LEDs × 4 channels × ~15 mA | 4.3 A (never reached) |
 | Firmware cap (`POWER_BUDGET_MA`), including the ESP32 | 2.5 A |
-| Fire at 30% brightness (default), firmware estimate over 100 s, all-in | avg 0.5 A, peak 0.7 A |
-| Fire at 100% brightness | avg 1.0 A, peak 1.5 A |
+| Fire at 60% brightness (default), firmware estimate over 100 s, all-in | avg 1.0 A, peak 1.1 A |
+| Fire at 100% brightness | avg 1.4 A, peak 1.6 A |
 | Off (ESP32 on Wi-Fi + strip idle) | ≈ 0.2 A (≈ 1.1 W) |
 
-The web page shows the firmware's live current estimate (`ledCurrentMa`). The Dig-Uno's 10 A fuse and 15 A rating leave plenty of margin, and a 3 A supply still has about 1.5 A to spare even at full brightness.
+The web page shows the firmware's live current estimate (`ledCurrentMa`). The Dig-Uno's 10 A fuse and 15 A rating leave plenty of margin, and a 3 A supply still has about 1.4 A to spare even at full brightness.
 
 ## Mounting
 
