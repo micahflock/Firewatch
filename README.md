@@ -23,7 +23,7 @@ flowchart LR
 - **Apple Home.** Firewatch shows up in the Home app as a dimmable **Fireplace** light that tracks the scene however it was started. Turning it on or off from Home, Siri, a scene or an automation does the same as `/on` and `/off`, and its brightness is the glow's. See [Apple Home and the lighter](#apple-home-and-the-lighter).
 - **Fireplace lighter (optional).** A battery lighter from the [Skeumo](https://github.com/micahflock/Skeumo) project: open the lid and roll the wheel, and the fire catches; snap the lid shut and it's snuffed. It broadcasts a signed Bluetooth burst that Firewatch acts on immediately, and relays into Apple Home as button presses.
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
-- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: an even red-orange glow that's steady low on the sides, with flicker that grows toward the flame tips across the top, independent left/right movement, and occasional small flares. Its parameters were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), its red-orange palette was then reworked after seeing it on the installed strip, and the output is temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
+- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: an even red-orange glow that's steady low on the sides, with flicker that grows toward the flame tips across the top, independent left/right movement, and occasional small flares. Its parameters were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), its red-orange palette was then reworked after seeing it on the installed strip, and the output is temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps. Color, highs and lows, and motion can be adjusted live from **Tune the glow** on the firewatch.local page ([install §4](docs/install.md#4-firmware)).
 
 ## Hardware (≈ $115–125 from scratch)
 
@@ -52,7 +52,7 @@ A QuinLED Dig-Uno (a classic ESP32 on an LED controller board with level shifter
 | [`docs/hardware.md`](docs/hardware.md) | Controller and strip survey, recommendation, parts list, wiring, mounting |
 | [`docs/install.md`](docs/install.md) | TV settings, `curl` pre-flight checks, flashing, assembly, troubleshooting |
 | [`firmware/`](firmware) | PlatformIO project (ESP32, Arduino) |
-| [`firmware/lib/firecore/`](firmware/lib/firecore/src) | Portable core: fire engine, output stage, scene state machine, ECP parsers (host-tested) |
+| [`firmware/lib/firecore/`](firmware/lib/firecore/src) | Portable core: fire engine, live tuning table, output stage, scene state machine, ECP parsers (host-tested) |
 | [`firmware/lib/skeumo_link/`](firmware/lib/skeumo_link) | Signed BLE frames from the lighter (vendored from Skeumo, host-tested there) |
 | [`hardware/mount/`](hardware/mount) | Parametric OpenSCAD source and printable STLs |
 | [`tools/preview/`](tools/preview) | Renders the fire engine to a GIF on your computer (optionally with video frames on the TV) |

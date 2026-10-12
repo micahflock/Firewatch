@@ -83,7 +83,17 @@ What to set in [`config.h`](../firmware/include/config.h):
 
 And in `secrets.h`: `HOMEKIT_SETUP_CODE` (optional, 8 digits; the build refuses codes Apple rejects, like `12345678`) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
 
-To tune the flame's character, edit `FireParams` in [`fire.h`](../firmware/lib/firecore/src/fire.h): flicker bands, rise speed, flare rate, and so on. [`tools/preview`](../tools/preview) renders the result to a GIF on your computer without any hardware.
+To tune the glow by eye, open **Tune the glow** on `http://firewatch.local` with the fire lit. Its sliders change the strip right away:
+
+| Group | Sliders |
+|---|---|
+| Color | Red, Orange (adds green), Warm white |
+| Highs and lows | Glow level and flicker depth, separately for the lower sides and the top |
+| Motion | Speed, seconds between flares, flare strength |
+
+Settings are saved a couple of seconds after the last change and survive reboots and updates. **Reset to defaults** puts them back. **Show settings** lists the values as `key=value` lines: pass them to [`tools/preview`](../tools/preview) to render that look as a GIF, or copy them into the `FireParams` defaults to ship them. Scripts can use the same API: `GET /tune` lists the controls, `POST /tune?orange=1.4&flickTop=0.6` sets any of them, and `POST /tune/reset` restores the defaults.
+
+Everything else about the flame's character (flicker bands, rise speed, the palette) is in `FireParams` in [`fire.h`](../firmware/lib/firecore/src/fire.h) and the palette in [`fire.cpp`](../firmware/lib/firecore/src/fire.cpp).
 
 ## 5. Build and install
 

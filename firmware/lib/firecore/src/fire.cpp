@@ -107,11 +107,20 @@ void FireEngine::updateFlares(double t) {
     if (f.start < slot->start) slot = &f;
   slot->start = t;
   slot->x0 = 0.2f + 0.6f * rand01();
-  slot->strength = params.flareMin + (params.flareMax - params.flareMin) * rand01();
+  float lo = std::fmin(params.flareMin, params.flareMax);
+  slot->strength = lo + (params.flareMax - lo) * rand01();
 }
 
-void FireEngine::render(double t, Rgbw* out) {
+void FireEngine::render(double realT, Rgbw* out) {
   const FireParams& p = params;
+  if (!started_ || realT < lastRealT_) {
+    simT_ = realT;  // first frame, or time went backwards (tests/preview restart)
+  } else {
+    simT_ += (realT - lastRealT_) * p.speed;
+  }
+  started_ = true;
+  lastRealT_ = realT;
+  const double t = simT_;
   updateFlares(t);
 
   float global = p.flickerSlow * noise3(wrap256(t * p.rateSlow), 0.5f, 0.5f) +
@@ -142,7 +151,8 @@ void FireEngine::render(double t, Rgbw* out) {
       float d = (x - flares_[f].x0) / 0.25f;
       heat += amp * flareEnv[f] * std::exp(-d * d);
     }
-    out[i] = heatToColor(heat);
+    Rgbw c = heatToColor(heat);
+    out[i] = {c.r * p.red, c.g * p.orange, c.b, c.w * p.white};
   }
 }
 

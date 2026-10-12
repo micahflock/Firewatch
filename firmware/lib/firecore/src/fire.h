@@ -40,8 +40,15 @@ struct FireParams {
 
   // Flares: a log catching. Mean interval, strength range, rise and decay.
   float flareMeanIntervalS = 7.0f;
-  float flareMin = 0.12f, flareMax = 0.24f;
+  float flareMin = 0.12f, flareMax = 0.24f;  // flareMax wins if set below flareMin
   float flareRiseS = 0.25f, flareDecayS = 1.2f;
+
+  // How fast all of the above moves (1 = as fitted). Changing it mid-run doesn't jump.
+  float speed = 1.0f;
+
+  // Color mix on top of the palette: gains on its red, green (more = more orange) and
+  // warm-white channels.
+  float red = 1.0f, orange = 1.0f, white = 1.0f;
 };
 
 class FireEngine {
@@ -71,6 +78,9 @@ class FireEngine {
   Flare flares_[3];
   double nextFlare_ = 2.0;
   double lastT_ = 0;
+  // The fire's own clock, which runs at params.speed relative to render()'s time.
+  double simT_ = 0, lastRealT_ = 0;
+  bool started_ = false;
 };
 
 }  // namespace fw

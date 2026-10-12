@@ -1,14 +1,17 @@
 // Renders the firmware's fire engine on the host and dumps raw frames for preview.py.
 // Build (from this directory):
-//   g++ -std=c++17 -O2 -I../../firmware/lib/firecore/src preview.cpp ../../firmware/lib/firecore/src/fire.cpp -o preview
+//   g++ -std=c++17 -O2 -I../../firmware/lib/firecore/src preview.cpp ../../firmware/lib/firecore/src/fire.cpp ../../firmware/lib/firecore/src/tuning.cpp -o preview
 // Usage: ./preview FRAMES FPS [param=value ...]   e.g. ./preview 250 25 flickerTop=1.2
+// Settings copied from the web page's "Show settings" work too, e.g. orange=1.60 flickTop=0.50.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <vector>
 
 #include "fire.h"
 #include "output.h"
+#include "tuning.h"
 
 static bool setParam(fw::FireParams& p, const char* arg) {
   struct Field {
@@ -47,7 +50,9 @@ int main(int argc, char** argv) {
   auto layout = fw::buildLayout(segs, 3);
   fw::FireEngine fire(layout, 42);
   for (int i = 3; i < argc; ++i) {
-    if (!setParam(fire.params, argv[i])) {
+    const char* eq = std::strchr(argv[i], '=');
+    bool fromPage = eq && fw::setTunable(fire.params, std::string(argv[i], eq - argv[i]).c_str(), std::atof(eq + 1));
+    if (!fromPage && !setParam(fire.params, argv[i])) {
       std::fprintf(stderr, "unknown parameter: %s\n", argv[i]);
       return 2;
     }

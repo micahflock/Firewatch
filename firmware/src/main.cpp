@@ -4,7 +4,8 @@
 // Core 0: "net" task polls the TV and runs the Scene state machine; "web" task serves HTTP;
 // HomeSpan's task serves Apple Home and owns Wi-Fi and mDNS. The BLE host task delivers
 // lighter frames.
-// The only state crossing tasks is a command queue, a few atomics and mutex-guarded status.
+// The only state crossing tasks is a command queue, a few atomics, mutex-guarded status and
+// the mutex-guarded fire tuning.
 
 #include <Arduino.h>
 #include <ArduinoOTA.h>
@@ -28,6 +29,7 @@
 #include "output.h"
 #include "roku_client.h"
 #include "scene.h"
+#include "tuning.h"
 #include "web_page.h"
 
 #if __has_include("secrets.h")
@@ -71,6 +73,44 @@ void setBrightness(int pct) {
   pct = constrain(pct, 0, 100);
   brightnessPct = pct;
   prefs.putUChar("bright", pct);
+}
+
+// Fire tuning from the web page. The web task edits `tuning` and bumps tuningVersion; the
+// render loop copies it into the engine when it can take the lock without waiting. It is
+// saved to flash once the sliders have been still for a moment, to spare the flash.
+std::mutex tuningMutex;
+fw::FireParams tuning;
+std::atomic<uint32_t> tuningVersion{0};
+uint32_t tuningChangedMs = 0;
+bool tuningUnsaved = false;
+
+String tuningPrefKey(const fw::Tunable& t) { return String("t_") + t.key; }
+
+void loadTuning() {
+  for (size_t i = 0; i < fw::kTunableCount; ++i) {
+    const fw::Tunable& t = fw::kTunables[i];
+    String k = tuningPrefKey(t);
+    if (prefs.isKey(k.c_str())) fw::setTunable(tuning, t.key, prefs.getFloat(k.c_str()));
+  }
+}
+
+// Only values that differ from the defaults are stored, so a later firmware's new defaults
+// still reach the settings nobody has touched.
+void saveTuning() {
+  fw::FireParams p, d;
+  {
+    std::lock_guard<std::mutex> lock(tuningMutex);
+    p = tuning;
+  }
+  for (size_t i = 0; i < fw::kTunableCount; ++i) {
+    const fw::Tunable& t = fw::kTunables[i];
+    String k = tuningPrefKey(t);
+    if (p.*(t.field) == d.*(t.field)) {
+      if (prefs.isKey(k.c_str())) prefs.remove(k.c_str());
+    } else {
+      prefs.putFloat(k.c_str(), p.*(t.field));
+    }
+  }
 }
 
 // Called once by HomeSpan when Wi-Fi first connects, after it has started mDNS as HOSTNAME.
@@ -211,6 +251,51 @@ void handleStatus() {
   server.send(200, "application/json", j);
 }
 
+String tuningJson() {
+  fw::FireParams p, d;
+  {
+    std::lock_guard<std::mutex> lock(tuningMutex);
+    p = tuning;
+  }
+  String j = "{\"controls\":[";
+  for (size_t i = 0; i < fw::kTunableCount; ++i) {
+    const fw::Tunable& t = fw::kTunables[i];
+    if (i) j += ",";
+    j += "{\"key\":\"" + String(t.key) + "\",\"group\":\"" + t.group + "\",\"label\":\"" + t.label +
+         "\",\"hint\":\"" + t.hint + "\",\"min\":" + String(t.min, 3) + ",\"max\":" + String(t.max, 3) +
+         ",\"step\":" + String(t.step, 3) + ",\"value\":" + String(p.*(t.field), 3) +
+         ",\"default\":" + String(d.*(t.field), 3) + "}";
+  }
+  return j + "]}";
+}
+
+// POST /tune?orange=1.4&flickTop=0.6 sets any number of controls; unknown names are ignored.
+void handleTune() {
+  bool changed = false;
+  {
+    std::lock_guard<std::mutex> lock(tuningMutex);
+    for (int i = 0; i < server.args(); ++i)
+      changed |= fw::setTunable(tuning, server.argName(i).c_str(), server.arg(i).toFloat());
+  }
+  if (changed) {
+    ++tuningVersion;
+    tuningChangedMs = millis();
+    tuningUnsaved = true;
+  }
+  server.send(200, "application/json", tuningJson());
+}
+
+void handleTuneReset() {
+  {
+    std::lock_guard<std::mutex> lock(tuningMutex);
+    tuning = fw::FireParams{};
+  }
+  ++tuningVersion;
+  tuningUnsaved = false;
+  saveTuning();
+  server.send(200, "application/json", tuningJson());
+}
+
 void webTask(void*) {
   server.on("/", HTTP_GET, [] { server.send_P(200, "text/html", kIndexHtml); });
   server.on("/status", HTTP_GET, handleStatus);
@@ -230,9 +315,16 @@ void webTask(void*) {
     if (server.hasArg("value")) setBrightness(server.arg("value").toInt());
     server.send(200, "application/json", "{\"brightness\":" + String(brightnessPct.load()) + "}");
   });
+  server.on("/tune", HTTP_GET, [] { server.send(200, "application/json", tuningJson()); });
+  server.on("/tune", HTTP_POST, handleTune);
+  server.on("/tune/reset", HTTP_POST, handleTuneReset);
   server.begin();
   for (;;) {
     server.handleClient();
+    if (tuningUnsaved && millis() - tuningChangedMs > 2000) {
+      tuningUnsaved = false;
+      saveTuning();
+    }
     vTaskDelay(pdMS_TO_TICKS(5));
   }
 }
@@ -244,6 +336,7 @@ fw::OutputStage* output;
 fw::Fader fader(FADE_IN_S, FADE_OUT_S);
 std::vector<fw::Rgbw> frame;
 std::vector<uint8_t> wire;
+uint32_t appliedTuning = 0;
 int64_t lastFrameUs = 0;
 bool stripDark = false;
 
@@ -275,7 +368,9 @@ void setup() {
 #endif
   ir::begin();
 
+  loadTuning();
   fire = new fw::FireEngine(layout, esp_random());
+  fire->params = tuning;
   fw::OutputConfig oc;
   oc.rgbw = LED_RGBW;
   oc.maPerChannel = MA_PER_CHANNEL;
@@ -339,6 +434,13 @@ void loop() {
     return;
   }
   stripDark = false;
+  if (tuningVersion.load() != appliedTuning) {
+    std::unique_lock<std::mutex> lock(tuningMutex, std::try_to_lock);
+    if (lock.owns_lock()) {
+      appliedTuning = tuningVersion.load();
+      fire->params = tuning;
+    }
+  }
   fire->render(now / 1e6, frame.data());
   output->process(frame.data(), env * brightnessPct.load() / 100.0f, wire.data());
   currentMa = output->currentMa();
