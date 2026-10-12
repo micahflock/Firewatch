@@ -79,6 +79,27 @@ void test_fire_is_steady_low_and_lively_on_top() {
   TEST_ASSERT_TRUE(change / (3000.0 * 72) < 0.05);   // but not strobing at 100 fps
 }
 
+void test_glow_dips_to_dark_across_the_top_only() {
+  auto layout = sides72();
+  FireEngine fire(layout, 7);
+  std::vector<Rgbw> px(fire.size());
+  int darkTop = 0, nTop = 0, darkLow = 0;
+  for (int f = 0; f < 6000; ++f) {
+    fire.render(f / 20.0, px.data());
+    for (size_t i = 0; i < px.size(); ++i) {
+      bool dark = px[i].r < 0.005f;
+      if (layout[i].y > 0.99f) {
+        darkTop += dark;
+        ++nTop;
+      }
+      if (layout[i].y < 0.33f) darkLow += dark;
+    }
+  }
+  TEST_ASSERT_TRUE(darkTop > nTop / 50);   // flame tips go dark now and then
+  TEST_ASSERT_TRUE(darkTop < nTop / 4);    // but are mostly lit
+  TEST_ASSERT_EQUAL(0, darkLow);           // the ember bed never goes out
+}
+
 void test_fire_survives_long_uptime() {
   FireEngine fire(sides72(), 99);
   std::vector<Rgbw> px(fire.size());
@@ -150,6 +171,7 @@ int main() {
   RUN_TEST(test_noise_is_bounded_and_periodic);
   RUN_TEST(test_palette_monotonic_brightness);
   RUN_TEST(test_fire_is_steady_low_and_lively_on_top);
+  RUN_TEST(test_glow_dips_to_dark_across_the_top_only);
   RUN_TEST(test_fire_survives_long_uptime);
   RUN_TEST(test_dither_average_matches_intent);
   RUN_TEST(test_power_limit);

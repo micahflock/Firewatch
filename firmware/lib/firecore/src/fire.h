@@ -38,6 +38,17 @@ struct FireParams {
   float breathAmount = 0.036f;
   float breathRate = 0.025f;
 
+  // Brightness dips, separate from color: patches of the glow fade down, sometimes all the
+  // way to dark, and back over a few seconds. A drifting noise field plus a slower
+  // whole-fire term give a level of dimLevel + dimSwing * noise, clipped to 0..1.
+  // dimBottom/dimTop are how deep the dips reach at the bottom vs the top of the TV, so the
+  // ember bed only dims while the flame tips go dark.
+  float dimLevel = 0.5f, dimSwing = 2.2f;
+  float dimGlobal = 0.35f;  // share of the whole-fire term in the mix
+  float dimRate = 0.35f;    // noise units per second
+  float dimScaleX = 1.6f, dimScaleY = 1.0f;
+  float dimBottom = 0.45f, dimTop = 1.0f;
+
   // Flares: a log catching. Mean interval, strength range, rise and decay.
   float flareMeanIntervalS = 7.0f;
   float flareMin = 0.12f, flareMax = 0.24f;

@@ -27,6 +27,10 @@ static bool setParam(fw::FireParams& p, const char* arg) {
       {"flareMeanIntervalS", &p.flareMeanIntervalS}, {"flareMin", &p.flareMin},
       {"flareMax", &p.flareMax},       {"flareRiseS", &p.flareRiseS},
       {"flareDecayS", &p.flareDecayS},
+      {"dimLevel", &p.dimLevel},       {"dimSwing", &p.dimSwing},
+      {"dimGlobal", &p.dimGlobal},     {"dimRate", &p.dimRate},
+      {"dimScaleX", &p.dimScaleX},     {"dimScaleY", &p.dimScaleY},
+      {"dimBottom", &p.dimBottom},     {"dimTop", &p.dimTop},
   };
   const char* eq = std::strchr(arg, '=');
   if (!eq) return false;

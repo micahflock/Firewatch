@@ -4,7 +4,7 @@ Fireplace ambiance for a TCL 32S335 Roku TV sitting in a real firebox. An addres
 
 ![Simulated glow](docs/img/preview.gif)
 
-*Offline render of the firmware's fire engine, with LEDs up the sides and across the top: a steady red-orange glow low on the sides, with the flicker concentrated across the top, where the flame tips would be.*
+*Offline render of the firmware's fire engine, with LEDs up the sides and across the top: a red-orange glow that's steadiest low on the sides, with the flicker concentrated across the top, where the flame tips would be. Patches of it fade down and back, and across the top they sometimes go fully dark.*
 
 ## How it works
 
@@ -23,7 +23,7 @@ flowchart LR
 - **Apple Home.** Firewatch shows up in the Home app as a dimmable **Fireplace** light that tracks the scene however it was started. Turning it on or off from Home, Siri, a scene or an automation does the same as `/on` and `/off`, and its brightness is the glow's. See [Apple Home and the lighter](#apple-home-and-the-lighter).
 - **Fireplace lighter (optional).** A battery lighter from the [Skeumo](https://github.com/micahflock/Skeumo) project: open the lid and roll the wheel, and the fire catches; snap the lid shut and it's snuffed. It broadcasts a signed Bluetooth burst that Firewatch acts on immediately, and relays into Apple Home as button presses.
 - **Smart plug alone doesn't work.** A Roku TV doesn't restart a streaming app after a power cut; it comes back to Home or a TV input. There's a 2-minute test to confirm this on your unit.
-- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: an even red-orange glow that's steady low on the sides, with flicker that grows toward the flame tips across the top, independent left/right movement, and occasional small flares. Its parameters were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), its red-orange palette was then reworked after seeing it on the installed strip, and the output is temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
+- **The fire is generated, not captured, and statistically matched to your video.** It models the *light a fire casts*: a red-orange glow that's steadiest low on the sides, with flicker that grows toward the flame tips across the top, independent left/right movement, slow brightness dips that take the flame tips fully dark now and then, and occasional small flares. Its parameters were fitted to measurements of the YouTube fireplace video ([feasibility §5](docs/feasibility.md#5-matching-the-glow-to-your-fireplace-video)), its red-orange palette and brightness dips were then added after seeing it on the installed strip, and the output is temporally dithered from 16-bit at 120 fps so dim embers don't show 8-bit steps.
 
 ## Hardware (≈ $115–125 from scratch)
 
