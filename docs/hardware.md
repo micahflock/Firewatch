@@ -123,7 +123,7 @@ Notes:
 |---|---|
 | Theoretical max: 72 lit LEDs × 4 channels × ~15 mA | 4.3 A (never reached) |
 | Firmware cap (`POWER_BUDGET_MA`), including the ESP32 | 2.5 A |
-| Fire at 60% brightness (default), firmware estimate over 100 s, all-in | avg 1.0 A, peak 1.1 A |
+| Fire at 30% brightness (default), firmware estimate over 100 s, all-in | avg 0.6 A, peak 0.7 A |
 | Fire at 100% brightness | avg 1.4 A, peak 1.6 A |
 | Off (ESP32 on Wi-Fi + strip idle) | ≈ 0.2 A (≈ 1.1 W) |
 
