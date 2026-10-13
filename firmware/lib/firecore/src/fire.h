@@ -12,8 +12,10 @@ struct Rgbw {
   float r = 0, g = 0, b = 0, w = 0;
 };
 
-// Defaults are fitted to the fireplace video's light statistics (steadiness, where it
-// varies, zone correlation, color) by tools/video_match/fit_params.py.
+// Defaults started from a fit to the fireplace video's light statistics (steadiness, where
+// it varies, zone correlation, color) by tools/video_match/fit_params.py. Flicker depth,
+// flare spacing and the white mix were then set by eye on the installed strip, using the
+// web page's tuning panel.
 struct FireParams {
   // Heat at the bottom and top of the TV (the LEDs run up the sides and across the top).
   float heatBottom = 0.85f;
@@ -22,7 +24,7 @@ struct FireParams {
 
   // How strongly everything below flickers, at the bottom vs the top of the TV. A log fire
   // is steady at the ember bed and lively where the flame tips reach.
-  float flickerBottom = 0.05f, flickerTop = 0.84f;
+  float flickerBottom = 0.20f, flickerTop = 0.52f;
 
   // Whole-fire flicker: three bands of smooth noise (slow sway, mid flicker, fast lick).
   float flickerSlow = 0.18f, flickerMid = 0.10f, flickerFast = 0.05f;
@@ -39,7 +41,7 @@ struct FireParams {
   float breathRate = 0.025f;
 
   // Flares: a log catching. Mean interval, strength range, rise and decay.
-  float flareMeanIntervalS = 7.0f;
+  float flareMeanIntervalS = 11.5f;
   float flareMin = 0.12f, flareMax = 0.24f;  // flareMax wins if set below flareMin
   float flareRiseS = 0.25f, flareDecayS = 1.2f;
 
@@ -48,7 +50,7 @@ struct FireParams {
 
   // Color mix on top of the palette: gains on its red, green (more = more orange) and
   // warm-white channels.
-  float red = 1.0f, orange = 1.0f, white = 1.0f;
+  float red = 1.0f, orange = 1.0f, white = 0.9f;
 };
 
 class FireEngine {

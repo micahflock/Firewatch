@@ -74,7 +74,7 @@ void test_fire_is_steady_low_and_lively_on_top() {
     top.push_back(t);
     low.push_back(b);
   }
-  TEST_ASSERT_TRUE(cv(top) > 2.0 * cv(low));  // steady low on the sides, lively flame tips
+  TEST_ASSERT_TRUE(cv(top) > 1.5 * cv(low));  // steadier low on the sides, livelier flame tips
   TEST_ASSERT_TRUE(change / (3000.0 * 72) > 0.001);  // flickers
   TEST_ASSERT_TRUE(change / (3000.0 * 72) < 0.05);   // but not strobing at 100 fps
 }
