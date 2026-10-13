@@ -13,9 +13,9 @@ struct Rgbw {
 };
 
 // Defaults started from a fit to the fireplace video's light statistics (steadiness, where
-// it varies, zone correlation, color) by tools/video_match/fit_params.py. Flicker depth,
-// flare spacing and the white mix were then set by eye on the installed strip, using the
-// web page's tuning panel.
+// it varies, zone correlation, color) by tools/video_match/fit_params.py. Flicker depth and
+// flare spacing were then set by eye on the installed strip, using the web page's tuning
+// panel.
 struct FireParams {
   // Heat at the bottom and top of the TV (the LEDs run up the sides and across the top).
   float heatBottom = 0.85f;
@@ -50,7 +50,7 @@ struct FireParams {
 
   // Color mix on top of the palette: gains on its red, green (more = more orange) and
   // warm-white channels.
-  float red = 1.0f, orange = 1.0f, white = 0.9f;
+  float red = 1.0f, orange = 1.0f, white = 1.0f;
 };
 
 class FireEngine {
