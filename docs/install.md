@@ -102,7 +102,15 @@ Everything else about the flame's character (flicker bands, rise speed, the pale
 3. Find + on the barrel pigtail with a multimeter and land its leads in the Dig-Uno's power input. Check that the LED1 jumper is on **GPIO16**; the firmware refuses to build for GPIO1.
 4. Screw the base onto the TV's VESA holes (M4 × 12), with the LED-end notch facing the bottom-left corner (front view), where the strip starts.
 5. Fix the Dig-Uno onto the standoffs with four M2 × 8 screws, with its power terminal and USB-C toward the window. Land the mating JST plug's leads in the LED output terminal (5V / LED1 / GND), and plug in the strip. Cable-tie the pigtail's jack and the strip leads to the anchors. From then on, the supply unplugs at the jack.
+
+   <img src="img/build_enclosure.jpg" width="600" alt="The Dig-Uno in its enclosure with the lid off">
+
+   *The Dig-Uno on its standoffs, lid off: barrel-jack pigtail into the power terminal on the left, strip leads out of the LED output on the right.*
 6. Stick on the clip bases. Lay the strip on the seats, then press a cap over each seat in a gap between two LEDs until both hooks click under the seat. To take a cap off, spread one leg with a fingernail or small screwdriver. Hold the wire runs down with scraps of VHB.
+
+   <img src="img/build_corner.jpg" width="600" alt="The strip bent around a top corner, with a cap between two LEDs">
+
+   *A top corner: the strip bends around in one piece, and the caps go in the gaps between LEDs.*
 7. Open `http://firewatch.local` and press **Light the fire**. Check that the steady part of the glow is low on the sides and the lively flicker is across the top. If it's the other way round, the layout direction is reversed. Then fasten the lid with four M2 × 8 screws.
 
 ## 6. Apple Home

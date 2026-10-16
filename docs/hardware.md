@@ -131,6 +131,10 @@ The web page shows the firmware's live current estimate (`ledCurrentMa`). The Di
 
 ## Mounting
 
+![The back of the TV with Firewatch fitted](img/build_back.jpg)
+
+*As built, seen from behind: the enclosure on the VESA holes and the strip on clips up both sides and across the top. The supply plugs in at the barrel jack on the left, and the strip at the JST plug on the right, near where it starts.*
+
 ![Assembly](img/assembly.png)
 
 ![Base](img/base.png) ![Lid](img/lid.png) ![Strip clip, end view](img/clip.png) ![Strip clip with the cap between two LEDs](img/clip_3d.png)
@@ -151,3 +155,7 @@ The Dig-Uno fits with its power terminal and USB-C toward the window end and its
 **Wi-Fi:** the board sits between the TV's metal chassis and the brick. Check the signal (`rssi` on the status page, in dBm). If it's worse than about −75, QuinLED sells an external-antenna version of the ESP32 board, and its lead can leave through the power window.
 
 **Strip placement:** put clips about 20 mm in from the TV's outer edge, up the left side, across the top and down the right side (none along the bottom). Space them every ~15 cm, plus one on each side of the two top corners (about 12–14 in total), with the seat facing outward. **At the two top corners, bend the strip around in one piece** (the as-built choice). It saves four solder joints, at the cost of some stress on the flexible PCB and roughly one LED of length per corner. Alternatively, cut at the copper cut marks and bridge the three pads with short lengths of the 22 AWG 3-conductor wire, soldered on the bench before fitting. The first 3 LEDs of the strip serve as a dark lead-in that carries the plug end out to where the left run starts (`LED_LEAD_IN`). Clean the TV back with isopropyl alcohol before applying the VHB, and press for 30 s. If your per-side LED counts differ from 17/38/17, put them in `kLedLayout`.
+
+<img src="img/build_side.jpg" width="600" alt="A side run of the strip on its clips">
+
+*A side run: each clip base holds the strip at 45°, facing outward, with a cap snapped on between two LEDs.*
