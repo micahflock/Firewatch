@@ -150,4 +150,12 @@ After the first USB flash, updates go over Wi-Fi with `pio run -e esp32-ota -t u
 
 ## License
 
-[CC BY-NC 4.0](LICENSE): you're welcome to build, remix and share Firewatch, including the firmware, the printed parts and the docs, as long as you credit it ("Firewatch by micahflock", with a link to this repo) and don't sell it or things made from it. For commercial use, get in touch through GitHub.
+Firewatch is open source and open hardware, under three copyleft licenses:
+
+| Part | License |
+|---|---|
+| Firmware and tools ([`firmware/`](firmware), [`tools/`](tools)) | [GPL-3.0-or-later](LICENSES/GPL-3.0-or-later.txt) |
+| Mount designs ([`hardware/`](hardware)) | [CERN-OHL-S-2.0](LICENSES/CERN-OHL-S-2.0.txt) |
+| Docs, photos and video ([`docs/`](docs), this README) | [CC BY-SA 4.0](LICENSES/CC-BY-SA-4.0.txt) |
+
+You're welcome to build, remix, share and even sell it. If you distribute it or something made from it, credit "Firewatch by micahflock" with a link to this repo, and release your changes under the same license. [LICENSE](LICENSE) has the details.

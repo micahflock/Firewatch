@@ -1,4 +1,6 @@
 // Firewatch mounting hardware — parametric, OpenSCAD 2021+.
+// SPDX-License-Identifier: CERN-OHL-S-2.0
+// Copyright (c) 2026 micahflock. Source location: https://github.com/micahflock/Firewatch
 //
 //   part = "base"           VESA plate + enclosure for a QuinLED Dig-Uno v3 (with QuinLED-ESP32)
 //   part = "lid"            vented lid
