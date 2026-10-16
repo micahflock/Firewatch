@@ -4,12 +4,10 @@
 //
 //   part = "base"           VESA plate + enclosure for a QuinLED Dig-Uno v3 (with QuinLED-ESP32)
 //   part = "lid"            vented lid
-//   part = "clip_base"      45-degree LED strip seat (stick to the TV back with VHB tape)
-//   part = "clip_cap"       snap-on cap that holds the strip on the seat
-//   part = "clip_assembly"  strip clip preview with the cap in place (not for printing)
 //   part = "all"            assembly preview (not for printing)
 //
 // Export:  openscad -D 'part="base"' -o base.stl firewatch_mount.scad
+// The LED strip clips are a separate design: strip_clip_10mm.step, beside this file.
 // Units: mm. Print in PETG (or PLA — the TV back stays well under PLA's softening point).
 //
 // Board orientation (matches QuinLED's dimension drawing, viewed from above):
@@ -65,30 +63,6 @@ fit = 0.3;
 lid_screw_clear = 2.4; // M2
 boss_d = 7;
 boss_x = 20;
-
-/* [Strip clip] */
-// Two parts: a base with a flat seat that sticks to the TV, and a narrow cap that snaps
-// over the seat between two LEDs and holds the strip's edges down. The strip just lies on
-// the seat, so it never has to bend across its width.
-strip_w = 10;          // PCB width of the LED strip (10 or 12 mm are common)
-clip_angle = 45;       // 0 = face straight back, 90 = face straight out
-clip_len = 20;         // base length along the strip
-cap_len = 5;           // cap length along the strip; it fits the 11.7 mm gap between
-                       // LEDs on a 60 LED/m strip
-strip_fit = 0.4;       // seat width over the strip width
-pcb_slot = 0.5;        // PCB + adhesive thickness under the cap's lips; at or a little
-                       // under the real thickness so the lips clamp the strip
-lip_over = 1.0;        // how far the lips overlap the PCB edge (clear of the LEDs)
-comp_clear = 1.0;      // headroom over the PCB between the lips (the capacitor beside
-                       // each LED)
-seat_t = strong_wall;  // the seat plate; its underside is the ledge the cap hooks under
-snap_over = 0.5;       // how far the hooks reach under the seat
-snap_fit = 0.2;        // side clearance between the cap's legs and the seat
-hook_h = 1.2;          // height of the hooks' lead-in ramp
-neck_in = 1.5;         // how far the seat overhangs its neck on each side
-// Both parts print profile face down, so every thickness in their profiles is a
-// vertical wall. The cap's top flexes to let the hooks spread (about 2% strain in PETG).
-cap_wall = strong_wall;
 
 $fn = 48;
 eps = 0.01;
@@ -190,88 +164,10 @@ module board_ghost() {
   }
 }
 
-// Clip profiles share a seat frame: u runs across the strip, v points away from the
-// seat. The seat's top face is v = seat_t and its underside (the ledge) is v = 0.
-seat_w = strip_w + strip_fit;
-neck_h = hook_h + 0.5;            // room under the ledge for the hooks
-clip_sole = strong_wall;          // the VHB mounting sole stays stiff and flat
-clip_shoulder = cap_wall + snap_fit + 0.5;  // the wedge stays this far out from the seat
-function seat_to_profile(p) = [p[0] * cos(clip_angle) - p[1] * sin(clip_angle),
-                               p[0] * sin(clip_angle) + p[1] * cos(clip_angle)];
-// Lift the tilted seat frame so the wedge's low shoulder corner sits on the sole.
-seat_lift = clip_sole - seat_to_profile([-clip_shoulder, -neck_h])[1];
-
-module clip_base_profile() {
-  // Profile plane: x across the TV surface (-x points toward the TV edge), y away from
-  // the TV. The mounting face is y = 0; the seat faces outward and backward. Below
-  // v = -neck_h the base widens into a solid wedge, clear of everywhere the cap's legs go.
-  pl = seat_to_profile([-clip_shoulder, -neck_h]) + [0, seat_lift];
-  pr = seat_to_profile([seat_w + clip_shoulder, -neck_h]) + [0, seat_lift];
-  translate([0, seat_lift]) rotate(clip_angle) {
-    square([seat_w, seat_t]);
-    translate([neck_in, -neck_h - eps]) square([seat_w - 2 * neck_in, neck_h + 2 * eps]);
-  }
-  polygon([pl, pr, [pr[0], 0], [pl[0], 0]]);
-  translate([pl[0] - 1, 0]) square([pr[0] - pl[0] + 2, clip_sole]);
-}
-
-module clip_cap_profile() {
-  c = snap_fit;
-  hd = c + snap_over;                     // hook depth from the leg's inner face
-  lip_v = seat_t + pcb_slot;              // lips' underside, on the PCB
-  roof_v = lip_v + comp_clear;            // underside of the top between the lips
-  top_v = roof_v + cap_wall;
-  lx = strip_fit / 2 + lip_over;          // lip reach in from the seat edge
-  difference() {
-    translate([-c - cap_wall, -hook_h]) square([seat_w + 2 * (c + cap_wall), top_v + hook_h]);
-    polygon([
-      [-c, -hook_h - eps], [-c + hd, 0], [-c, 0], [-c, lip_v], [lx, lip_v], [lx, roof_v],
-      [seat_w - lx, roof_v], [seat_w - lx, lip_v], [seat_w + c, lip_v], [seat_w + c, 0],
-      [seat_w + c - hd, 0], [seat_w + c, -hook_h - eps]]);
-  }
-}
-
-module clip_base() {
-  linear_extrude(clip_len) clip_base_profile();
-}
-
-module clip_cap() {
-  linear_extrude(cap_len) clip_cap_profile();
-}
-
-// In the base's coordinates, for previews only: the cap in place (or lifted off by
-// `lift`), and a strip with two LEDs either side of it at 60 LED/m.
-module in_seat_frame(z = 0) {
-  translate([0, seat_lift, z]) rotate(clip_angle) children();
-}
-
-module clip_cap_seated(lift = 0) {
-  in_seat_frame((clip_len - cap_len) / 2) translate([0, lift, 0]) clip_cap();
-}
-
-module strip_ghost() {
-  pitch = 1000 / 60;
-  in_seat_frame() {
-    color("white") translate([strip_fit / 2, seat_t, -5]) cube([strip_w, pcb_slot, clip_len + 10]);
-    for (z = [clip_len / 2 - pitch / 2, clip_len / 2 + pitch / 2])
-      color("gold") translate([seat_w / 2 - 2.5, seat_t + pcb_slot, z - 2.5]) cube([5, 1.6, 5]);
-  }
-}
-
-module clip_assembly(lift = 0) {
-  clip_base();
-  strip_ghost();
-  color("orange", 0.8) clip_cap_seated(lift);
-}
-
 if (part == "base") base();
 else if (part == "lid") lid();
-else if (part == "clip_base") clip_base();
-else if (part == "clip_cap") clip_cap();
-else if (part == "clip_assembly") clip_assembly();
 else {
   base();
   board_ghost();
   translate([0, 0, plate_t + inner_h + lid_t + 25]) mirror([0, 0, 1]) color("orange", 0.6) lid();
-  translate([85, 0, 0]) clip_assembly();
 }

@@ -137,16 +137,16 @@ The web page shows the firmware's live current estimate (`ledCurrentMa`). The Di
 
 ![Assembly](img/assembly.png)
 
-![Base](img/base.png) ![Lid](img/lid.png) ![Strip clip, end view](img/clip.png) ![Strip clip with the cap between two LEDs](img/clip_3d.png)
+![Base](img/base.png) ![Lid](img/lid.png) ![Strip clip, end view, with the strip on the seat under the cap](img/clip.png) ![Strip clip with the cap between two LEDs](img/clip_3d.png)
 
-Source: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_mount.scad) (parametric, with the Dig-Uno dimensions from QuinLED's drawing). STLs are in [`hardware/mount/stl/`](../hardware/mount/stl).
+Sources: [`hardware/mount/firewatch_mount.scad`](../hardware/mount/firewatch_mount.scad) for the base and lid (parametric OpenSCAD, with the Dig-Uno dimensions from QuinLED's drawing), and [`hardware/mount/strip_clip_10mm.step`](../hardware/mount/strip_clip_10mm.step) for the strip clip (designed in Fusion 360; the STEP opens in any CAD program for changes). STLs are in [`hardware/mount/stl/`](../hardware/mount/stl).
 
 | File | What | Print |
 |---|---|---|
 | `firewatch_base.stl` | X-shaped VESA plate + Dig-Uno enclosure. The diagonal slots fit **both 75 × 75 and 100 × 100** (the 32S335 is 100 × 100, M4). Four M2 standoffs on the Dig-Uno's hole pattern. A wide window on the power end for the barrel-jack pigtail's leads **and USB-C access**, a notch on the LED end for the strip wiring, a small notch for the optional IR lead, and three cable-tie anchors. | Flat side down, 20% infill, no supports. Load-bearing walls are 1.67 mm, locating walls (the lid lip) 0.86 mm, and the plate is 2 mm (`strong_wall`, `light_wall`, `plate_t` in the source). |
 | `firewatch_base_M6.stl` | Same, with M6 clearance slots for other TVs | |
 | `firewatch_lid.stl` | Vented lid with a locating lip; four M2 screws | Flat (outer) face down, no supports |
-| `strip_clip_base_10mm.stl` + `strip_clip_cap_10mm.stl` (or the `_12mm` pair) | Two-part 45° strip clip. The base sticks to the TV and has a flat seat that holds the strip facing outward and backward toward the firebox walls. The strip just lies on the seat, so it never has to bend. The 5 mm cap snaps over the seat **between two LEDs**: hooks catch under the seat's edges, and lips press the PCB edges down, with 1 mm of headroom over the capacitor between them. | Both **profile face down** (as exported), no supports. 14 of each. If the cap is loose on your strip, lower `pcb_slot`; if it won't snap home, raise it. |
+| `strip_clip_base_10mm.stl` + `strip_clip_cap_10mm.stl` | Two-part 45° strip clip for 10 mm strip. The 25 mm base sticks to the TV on a thin sole, and a curved arm carries a seat that holds the strip facing outward and backward toward the firebox walls. The strip lies in a shallow channel on the seat, so it never has to bend across its width. The 9 mm cap wraps over the seat **between two LEDs** and holds the strip down. | Both **profile face down** (as exported), no supports. 14 of each. |
 
 The Dig-Uno fits with its power terminal and USB-C toward the window end and its LED output toward the notch end. The standoffs only fit that way round, or rotated 180°.
 

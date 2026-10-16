@@ -142,7 +142,7 @@ After the first USB flash, updates go over Wi-Fi with `pio run -e esp32-ota -t u
 | [`firmware/`](firmware) | PlatformIO project (ESP32, Arduino): LED output, Roku client, web server, HomeKit, BLE |
 | [`firmware/lib/firecore/`](firmware/lib/firecore/src) | Portable core: fire engine, live tuning table, output stage, scene state machine, Home sync, ECP parsers (host-tested) |
 | [`firmware/lib/skeumo_link/`](firmware/lib/skeumo_link) | Signed BLE frames from the lighter (vendored from Skeumo, host-tested there) |
-| [`hardware/mount/`](hardware/mount) | Parametric OpenSCAD source and printable STLs |
+| [`hardware/mount/`](hardware/mount) | Parametric OpenSCAD source for the enclosure, the strip clip's STEP (Fusion 360), and printable STLs |
 | [`tools/preview/`](tools/preview) | Renders the fire engine to a GIF on your computer (optionally with video frames on the TV) |
 | [`tools/video_match/`](tools/video_match) | Measures a fireplace video's light from YouTube storyboards and fits the engine to it |
 

@@ -104,7 +104,7 @@ Everything else about the flame's character (flicker bands, rise speed, the pale
    <img src="img/build_enclosure.jpg" width="600" alt="The Dig-Uno in its enclosure with the lid off">
 
    *The Dig-Uno on its standoffs, lid off: barrel-jack pigtail into the power terminal on the left, strip leads out of the LED output on the right.*
-6. Stick on the clip bases. Lay the strip on the seats, then press a cap over each seat in a gap between two LEDs until both hooks click under the seat. To take a cap off, spread one leg with a fingernail or small screwdriver. Hold the wire runs down with scraps of VHB.
+6. Stick on the clip bases. Lay the strip in the seats, then press a cap over each seat in a gap between two LEDs until it snaps home. Hold the wire runs down with scraps of VHB.
 
    <img src="img/build_corner.jpg" width="600" alt="The strip bent around a top corner, with a cap between two LEDs">
 
