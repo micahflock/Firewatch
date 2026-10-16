@@ -2,6 +2,10 @@
 
 Fireplace ambiance for a TCL 32S335 Roku TV sitting in a real firebox. An addressable LED strip around the back of the TV throws a self-generated firelight glow onto the brick. An ESP32 keeps the glow and the TV in sync: **press power on the Roku remote, and the glow swells in while the TV opens the YouTube fireplace.** Press it again and both go out.
 
+<a href="docs/img/demo.mp4"><img src="docs/img/demo.gif" width="300" alt="Firewatch installed in the firebox"></a>
+
+*Installed in the firebox. Click for the full-resolution video.*
+
 ![Simulated glow](docs/img/preview.gif)
 
 *Offline render of the firmware's fire engine, with LEDs up the sides and across the top: a red-orange glow that moves gently low on the sides, with the flicker concentrated across the top, where the flame tips would be.*
