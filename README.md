@@ -147,3 +147,7 @@ After the first USB flash, updates go over Wi-Fi with `pio run -e esp32-ota -t u
 | [`tools/video_match/`](tools/video_match) | Measures a fireplace video's light from YouTube storyboards and fits the engine to it |
 
 **Built with:** C++17 on Arduino-ESP32, [NeoPixelBus](https://github.com/Makuna/NeoPixelBus), [HomeSpan](https://github.com/HomeSpan/HomeSpan), [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino), [IRremoteESP8266](https://github.com/crankyoldgit/IRremoteESP8266), Unity for host tests, Python for the video analysis, and OpenSCAD for the mount.
+
+## License
+
+[CC BY-NC 4.0](LICENSE): you're welcome to build, remix and share Firewatch, including the firmware, the printed parts and the docs, as long as you credit it ("Firewatch by micahflock", with a link to this repo) and don't sell it or things made from it. For commercial use, get in touch through GitHub.
