@@ -132,10 +132,10 @@ The idea: analyze the video frame by frame offline, store a per-zone light track
 | Achievable accuracy | **Measured on your TV:** the reported position advances in steps of about 0.5 s (500–517 ms, with one 686 + 335 ms pair), and tracks real time at 1.00×. Read naively, that means ±0.5 s. But each step is a fresh snapshot of the true position, so the firmware can poll every 100–200 ms, anchor its own clock to the moment each step appears, and keep the freshest anchor. That brings the error down to about **±100 ms** (poll interval plus network jitter). |
 | Payoff | **Small.** For the wall to visibly "answer" a flame, the timing error has to be under ~100 ms. At ±100–250 ms the 3–8 Hz flicker lands out of phase, and only slow swells (≥ 1 s) would visibly line up. This video's fire is steady, with few big swells. The screen itself already throws perfectly synced light into the firebox. |
 
-**Position-granularity test** (Windows PowerShell, run while the video plays; this is how the numbers above were measured):
+**Position-granularity test** (Windows PowerShell, run while the video plays, with `TV` replaced by the TV's IP; this is how the numbers above were measured):
 
 ```powershell
-1..20 | % { $t = Get-Date -Format "HH:mm:ss.fff"; $p = ([xml](Invoke-WebRequest -UseBasicParsing http://192.168.1.176:8060/query/media-player).Content).player.position; "$t  $p"; Start-Sleep -Milliseconds 250 }
+1..20 | % { $t = Get-Date -Format "HH:mm:ss.fff"; $p = ([xml](Invoke-WebRequest -UseBasicParsing http://TV:8060/query/media-player).Content).player.position; "$t  $p"; Start-Sleep -Milliseconds 250 }
 ```
 
 **Recommendation:** the position feed is good enough for a **slow-envelope sync**. The glow's overall brightness would follow a pre-computed track of the video's 0.2–2 Hz swells and flares at about ±100 ms, and the fast flicker would stay procedural. Full frame-level sync isn't worth it: 3–8 Hz flicker needs better than ±30 ms to line up visibly.

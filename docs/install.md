@@ -13,7 +13,7 @@ On the TCL 32S335:
 
 ## 2. Prove the network path before building anything
 
-From a computer on the same network (replace `TV` with the TV's IP address, `192.168.1.176`). These commands work in a macOS/Linux terminal and in Windows Command Prompt. In PowerShell, type `curl.exe` instead of `curl`. On Windows, replace `| grep -E "a|b|c"` with `| findstr "a b c"`. Commands that send something (`-d ""`) print nothing when they succeed.
+From a computer on the same network (replace `TV` with the TV's IP address, from **Settings → Network → About** on the TV). These commands work in a macOS/Linux terminal and in Windows Command Prompt. In PowerShell, type `curl.exe` instead of `curl`. On Windows, replace `| grep -E "a|b|c"` with `| findstr "a b c"`. Commands that send something (`-d ""`) print nothing when they succeed.
 
 ```sh
 # Is ECP reachable, and is the screen on?
@@ -49,7 +49,7 @@ Requires [PlatformIO](https://platformio.org/install/cli) (`pip install platform
 
 ```sh
 cd firmware
-cp include/secrets.example.h include/secrets.h   # Wi-Fi SSID/password, OTA password
+cp include/secrets.example.h include/secrets.h   # Wi-Fi SSID/password, OTA password, TV's IP and MAC
 $EDITOR include/config.h                          # ROKU_HOST, LED layout
 pio test -e native                                # host unit tests
 pio run -e esp32 -t upload                        # first flash over the Dig-Uno's USB-C
@@ -67,8 +67,6 @@ What to set in [`config.h`](../firmware/include/config.h):
 | Setting | What |
 |---|---|
 | `FIRE_CONTENT_ID` | The YouTube fireplace video ID. It's already set to yours (`CF00JqnCcsU`). |
-| `ROKU_HOST` | The TV's reserved IP address (set to `192.168.1.176`). If it's empty, the TV is found by SSDP discovery. |
-| `ROKU_WIFI_MAC` | The TV's Wi-Fi MAC, for Wake-on-LAN before the firmware has read it from the TV (set to `D4:AB:CD:A8:96:96`) |
 | `kLedLayout` | The strip's runs in data order, in **front-view** coordinates. The default is 17/38/17 LEDs: up the left side from the bottom, across the top, and down the right side. There's no bottom edge. |
 | `LED_LEAD_IN` | Dark LEDs at the start of the strip, ahead of the first run (default 3) |
 | `LED_RGBW` | 1 for SK6812 RGBW, 0 for WS2812B/WS2815 RGB strips |
@@ -81,7 +79,7 @@ What to set in [`config.h`](../firmware/include/config.h):
 | `LIGHTER_ENABLED` | 1 = listen for the Skeumo fireplace lighter over Bluetooth; 0 = Bluetooth off |
 | `LIGHTER_DIRECT` | 1 = a strike/snuff turns the fire on/off directly; 0 = only relay the buttons to Apple Home |
 
-And in `secrets.h`: `HOMEKIT_SETUP_CODE` (optional, 8 digits; the build refuses codes Apple rejects, like `12345678`) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
+And in `secrets.h`, which keeps your network details out of the repo: `ROKU_HOST` (the TV's reserved IP; if it's left out, the TV is found by SSDP discovery), `ROKU_WIFI_MAC` (the TV's Wi-Fi MAC from **Settings → Network → About**, for Wake-on-LAN before the firmware has read it from the TV), `HOMEKIT_SETUP_CODE` (optional, 8 digits; the build refuses codes Apple rejects, like `12345678`) and `SKEUMO_LINK_KEY` (the lighter's shared key, 32 hex digits; leave the placeholder if you have no lighter).
 
 To tune the glow by eye, open **Tune the glow** on `http://firewatch.local` with the fire lit. Its sliders change the strip right away:
 

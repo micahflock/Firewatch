@@ -4,6 +4,11 @@
 #define WIFI_PASSWORD "your-password"
 #define OTA_PASSWORD "change-me"
 
+// Optional: your TV's reserved IP and Wi-Fi MAC (see config.h). Without them the TV is found
+// by SSDP, and Wake-on-LAN waits until the firmware has read the MAC from the TV.
+// #define ROKU_HOST "192.168.1.50"
+// #define ROKU_WIFI_MAC "AA:BB:CC:DD:EE:FF"
+
 // Optional: your own 8-digit Apple Home setup code. The build refuses codes Apple rejects:
 // all the same digit, 12345678 or 87654321. Without it, HomeSpan's default 466-37-726 is used.
 // #define HOMEKIT_SETUP_CODE "20481357"

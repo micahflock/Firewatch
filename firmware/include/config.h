@@ -3,6 +3,11 @@
 
 #include "layout.h"
 
+// secrets.h (git-ignored) can also hold this network's addresses, ROKU_HOST and ROKU_WIFI_MAC.
+#if __has_include("secrets.h")
+#include "secrets.h"
+#endif
+
 // ---- LED strip -------------------------------------------------------------------
 // 1 = SK6812 RGBW (recommended, warm-white die), 0 = RGB strip (WS2812B/WS2815).
 #define LED_RGBW 1
@@ -37,11 +42,17 @@ static const fw::Segment kLedLayout[] = {
 #define TARGET_FPS 120  // high frame rate makes the temporal dithering invisible
 
 // ---- Roku TV -----------------------------------------------------------------------
-// The TV's reserved IP. Leave empty to auto-discover via SSDP instead.
-#define ROKU_HOST "192.168.1.176"
-// The TV's Wi-Fi MAC (Settings > Network > About) for Wake-on-LAN before the firmware has
-// read it from the TV itself, e.g. right after a power cut. Leave empty to skip.
-#define ROKU_WIFI_MAC "D4:AB:CD:A8:96:96"
+// The TV's reserved IP, e.g. "192.168.1.50". Empty auto-discovers it via SSDP instead.
+// Set it in secrets.h, which overrides this default.
+#ifndef ROKU_HOST
+#define ROKU_HOST ""
+#endif
+// The TV's Wi-Fi MAC (Settings > Network > About), e.g. "AA:BB:CC:DD:EE:FF", for Wake-on-LAN
+// before the firmware has read it from the TV itself, e.g. right after a power cut. Empty
+// skips it. Set it in secrets.h, which overrides this default.
+#ifndef ROKU_WIFI_MAC
+#define ROKU_WIFI_MAC ""
+#endif
 // YouTube's Roku channel id is 837; contentId is the YouTube video id (the part after
 // "v=" in the URL, or after youtu.be/). A long (8-12 h) video
 // avoids end-of-video autoplay. Left empty, YouTube just opens to its home screen.
